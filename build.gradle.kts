@@ -4,7 +4,7 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.github.cs124-illinois"
-version = "2023.2.0"
+version = "2023.2.1"
 
 plugins {
     kotlin("jvm") version "1.8.10"
@@ -15,7 +15,7 @@ plugins {
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
 
-    id("com.github.ben-manes.versions") version "0.45.0"
+    id("com.github.ben-manes.versions") version "0.46.0"
     id("io.gitlab.arturbosch.detekt") version "1.22.0"
 }
 repositories {
@@ -28,7 +28,7 @@ dependencies {
     implementation("io.github.classgraph:classgraph:4.8.154")
     implementation("io.github.kostaskougios:cloning:1.10.3")
 
-    testImplementation("io.kotest:kotest-runner-junit5:5.5.4")
+    testImplementation("io.kotest:kotest-runner-junit5:5.5.5")
     testImplementation("org.slf4j:slf4j-simple:2.0.6")
 }
 tasks.withType<JavaCompile> {
@@ -54,7 +54,7 @@ tasks.withType<Test> {
 }
 tasks.dependencyUpdates {
     fun String.isNonStable() = !(
-        listOf("RELEASE", "FINAL", "GA").any { toUpperCase().contains(it) }
+        listOf("RELEASE", "FINAL", "GA").any { uppercase().contains(it) }
             || "^[0-9,.v-]+(-r)?$".toRegex().matches(this)
         )
     rejectVersionIf { candidate.version.isNonStable() }
