@@ -423,11 +423,14 @@ fun String.toKotlinType() = when {
     else -> this
 }
 
+@Suppress("CyclomaticComplexMethod")
 fun Executable.fullName(isKotlin: Boolean = false): String {
     val visibilityModifier = getVisibilityModifier(isKotlin)?.plus(" ")
+    val isConstructor = this is Constructor<*>
+
     val returnType = when (this) {
         is Constructor<*> -> ""
-        is Method -> genericReturnType.typeName
+        is Method -> genericReturnType.cleanTypeName()
         else -> error("Unknown executable type")
     }.let { type ->
         if (isKotlin) {
@@ -453,19 +456,23 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
         } else {
             ""
         }
-        }$returnType$name(${parameters.joinToString(", ") { it.type.canonicalName }})"
+        }$returnType$name(${parameters.joinToString(", ") { it.type.cleanCanonicalName() }})"
     } else {
-        "${visibilityModifier ?: ""}fun $name(${
+        "${visibilityModifier ?: ""}${if (!isConstructor) { "fun " } else {""}}$name(${
         parameters.joinToString(", ") {
-            it.type.canonicalName.toKotlinType()
+            it.type.cleanCanonicalName().toKotlinType()
         }
-        }): $returnType"
+        })${if (!isConstructor) {": $returnType"} else {""}}"
     }
 }
 
+fun Class<*>.cleanCanonicalName() = canonicalName?.removePrefix("java.lang.") ?: "Unknown"
+
+fun Type.cleanTypeName(): String = typeName.removePrefix("java.lang.")
+
 fun Field.fullName(): String {
     val visibilityModifier = getVisibilityModifier()?.plus(" ")
-    return "${visibilityModifier ?: ""}${type.canonicalName} $name"
+    return "${visibilityModifier ?: ""}${type.cleanCanonicalName()} $name"
 }
 
 fun Class<*>.visibilityMatches(klass: Class<*>) = when {

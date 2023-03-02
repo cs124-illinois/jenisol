@@ -7,6 +7,7 @@ import edu.illinois.cs.cs125.jenisol.core.EdgeType
 import edu.illinois.cs.cs125.jenisol.core.RandomType
 import edu.illinois.cs.cs125.jenisol.core.SimpleType
 import edu.illinois.cs.cs125.jenisol.core.TestRunner
+import edu.illinois.cs.cs125.jenisol.core.cleanTypeName
 import edu.illinois.cs.cs125.jenisol.core.deepCopy
 import edu.illinois.cs.cs125.jenisol.core.unwrap
 import java.lang.IllegalStateException
@@ -358,7 +359,7 @@ object Defaults {
                 }
             }
         }
-        error("Cannot find generator for type ${type.typeName}")
+        error("Cannot find generator for type ${type.cleanTypeName()}")
     }
 
     fun create(klass: Class<*>, random: Random = Random, cloner: Cloner): TypeGenerator<*> = get(klass)(random, cloner)

@@ -12,6 +12,7 @@ import edu.illinois.cs.cs125.jenisol.core.RandomType
 import edu.illinois.cs.cs125.jenisol.core.SimpleType
 import edu.illinois.cs.cs125.jenisol.core.Solution
 import edu.illinois.cs.cs125.jenisol.core.TestRunner
+import edu.illinois.cs.cs125.jenisol.core.cleanTypeName
 import edu.illinois.cs.cs125.jenisol.core.deepCopy
 import edu.illinois.cs.cs125.jenisol.core.fixedParametersMatchAll
 import edu.illinois.cs.cs125.jenisol.core.getFixedFieldParametersName
@@ -759,7 +760,7 @@ class TypeParameterGenerator(
             Defaults[type]
         }
         generator?.invoke(random, cloner) ?: error(
-            "Couldn't find generator for parameter ${it.name} with type ${it.parameterizedType.typeName}"
+            "Couldn't find generator for parameter ${it.name} with type ${it.parameterizedType.cleanTypeName()}"
         )
     }
 
