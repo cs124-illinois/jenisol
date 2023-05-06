@@ -303,7 +303,7 @@ class Solution(val solution: Class<*>) {
             solution: Any,
             submission: Any,
             solutionClass: Class<*>?,
-            submissionClass: Class<*>?
+            submissionClass: Class<*>?,
         ): Boolean =
             true
     }
@@ -335,7 +335,7 @@ class Solution(val solution: Class<*>) {
             check(firstValue.deepEquals(secondValue, Comparators(), null, null)) {
                 error(
                     "Field ${field.name} was not equal between solution instances. " +
-                        "Make sure any randomness is consistent."
+                        "Make sure any randomness is consistent.",
                 )
             }
         }
@@ -451,17 +451,17 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
     }
     return if (!isKotlin) {
         "${visibilityModifier ?: ""}${
-        if (isStatic()) {
-            "static "
-        } else {
-            ""
-        }
+            if (isStatic()) {
+                "static "
+            } else {
+                ""
+            }
         }$returnType$name(${parameters.joinToString(", ") { it.type.cleanCanonicalName() }})"
     } else {
         "${visibilityModifier ?: ""}${if (!isConstructor) { "fun " } else {""}}$name(${
-        parameters.joinToString(", ") {
-            it.type.cleanCanonicalName().toKotlinType()
-        }
+            parameters.joinToString(", ") {
+                it.type.cleanCanonicalName().toKotlinType()
+            }
         })${if (!isConstructor) {": $returnType"} else {""}}"
     }
 }
@@ -541,7 +541,7 @@ fun compareReturn(
     solutionReturn: Type,
     solution: Class<*>,
     submissionReturn: Type,
-    submission: Class<*>
+    submission: Class<*>,
 ) = when {
     solutionReturn == submissionReturn -> true
     solutionReturn == solution && submissionReturn == submission -> true
@@ -562,7 +562,7 @@ fun compareParameters(
     solutionParameters: Array<Type>,
     solution: Class<*>,
     submissionParameters: Array<Type>,
-    submission: Class<*>
+    submission: Class<*>,
 ): Boolean {
     if (solutionParameters.size != submissionParameters.size) {
         return false
@@ -661,13 +661,13 @@ data class Settings(
     val receiverCount: Int = -1,
     val minTestCount: Int = -1,
     val maxTestCount: Int = -1,
-    val testing: Boolean? = null
+    val testing: Boolean? = null,
 ) {
     companion object {
         const val DEFAULT_RECEIVER_RETRIES = 4
         val DEFAULTS = Settings(
             runAll = false,
-            testing = false
+            testing = false,
         )
     }
 
@@ -706,7 +706,7 @@ data class Settings(
             } else {
                 maxTestCount
             },
-            other.testing ?: testing
+            other.testing ?: testing,
         )
     }
 }

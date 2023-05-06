@@ -29,13 +29,13 @@ data class Result<T, P : ParameterGroup>(
     @JvmField val interleavedOutput: String,
     @JvmField val truncatedLines: Int,
     @JvmField val tag: Any?,
-    @JvmField val modifiedParameters: Boolean
+    @JvmField val modifiedParameters: Boolean,
 ) {
     @Suppress("UNCHECKED_CAST")
     constructor(
         parameters: Array<Any?>,
         capturedResult: CapturedResult,
-        modifiedParameters: Boolean
+        modifiedParameters: Boolean,
     ) : this(
         parameters.toParameterGroup() as P,
         capturedResult.returned as T?,
@@ -46,7 +46,7 @@ data class Result<T, P : ParameterGroup>(
         capturedResult.interleavedInputOutput,
         capturedResult.truncatedLines,
         capturedResult.tag,
-        modifiedParameters
+        modifiedParameters,
     )
 
     override fun toString(): String {
@@ -108,7 +108,7 @@ data class TestResult<T, P : ParameterGroup>(
     @JvmField val solutionMethodString: String,
     @JvmField val submissionMethodString: String,
     @JvmField val currentRandom: Int,
-    @JvmField val randomCount: Int
+    @JvmField val randomCount: Int,
 ) {
     @Suppress("UNCHECKED_CAST")
     @JvmField
@@ -197,9 +197,9 @@ Submission returned: ${print(submission.returned)}
                     """
 Solution did not modify its parameters
 Submission did modify its parameters to ${
-                    print(
-                        submission.parameters.toArray()
-                    )
+                        print(
+                            submission.parameters.toArray(),
+                        )
                     }
                     """.trim()
                 } else if (solution.modifiedParameters && !submission.modifiedParameters) {
@@ -211,9 +211,9 @@ Submission did not modify its parameters
                     """
 Solution modified its parameters to ${print(solution.parameters.toArray())}
 Submission modified its parameters to ${
-                    print(
-                        submission.parameters.toArray()
-                    )
+                        print(
+                            submission.parameters.toArray(),
+                        )
                     }
                     """.trim()
                 }
@@ -273,7 +273,7 @@ class TestResults(
     val untestedReceivers: Int,
     designOnly: Boolean? = null,
     val skippedSteps: List<Int>,
-    val randomTrace: List<Int>? = null
+    val randomTrace: List<Int>? = null,
     // val randomCallers: List<String>? = null
 ) : List<TestResult<Any, ParameterGroup>> by results {
     val succeeded = designOnly ?: finishedReceivers && all { it.succeeded } && completed
@@ -297,9 +297,9 @@ class TestResults(
             result.apply {
                 println(
                     "${
-                    runnerID.toString().padStart(4, ' ')
+                        runnerID.toString().padStart(4, ' ')
                     }: $solutionReceiver $solutionMethodString -> ${solution.returned}" +
-                        "\n${" ".repeat(4)}: $submissionReceiver $submissionMethodString -> ${submission.returned}"
+                        "\n${" ".repeat(4)}: $submissionReceiver $submissionMethodString -> ${submission.returned}",
                 )
             }
         }
@@ -317,7 +317,7 @@ class TestRunner(
     val settings: Settings,
     val runners: List<TestRunner>,
     var receivers: Value<Any?>?,
-    val random: Submission.RecordingRandom
+    val random: Submission.RecordingRandom,
 ) {
     val testResults: MutableList<TestResult<*, *>> = mutableListOf()
     val skippedTests: MutableList<Int> = mutableListOf()
@@ -356,7 +356,7 @@ class TestRunner(
                     null,
                     submission.submission.kotlin.companionObjectInstance,
                     null,
-                    ZeroComplexity
+                    ZeroComplexity,
                 )
             }
         }
@@ -383,7 +383,7 @@ class TestRunner(
         receiver: Any?,
         parameters: Array<Any?>,
         parametersCopy: Array<Any?>? = null,
-        systemInParameters: SystemIn? = null
+        systemInParameters: SystemIn? = null,
     ): Result<Any, ParameterGroup> {
         checkParameters(parameters)
         if (parametersCopy != null) {
@@ -405,14 +405,14 @@ class TestRunner(
             Result(
                 parameters,
                 it,
-                parametersCopy?.let { !submission.compare(parameters, parametersCopy) } ?: false
+                parametersCopy?.let { !submission.compare(parameters, parametersCopy) } ?: false,
             )
         }
     }
 
     private data class SolutionSubmissionResultPair(
         val solution: Result<Any, ParameterGroup>,
-        val submission: Result<Any, ParameterGroup>
+        val submission: Result<Any, ParameterGroup>,
     )
 
     private data class SolutionSubmissionReturnPair(val solution: Any, val submission: Any?)
@@ -425,9 +425,9 @@ class TestRunner(
         val solutionClass = this@TestRunner.submission.solution.solution
         val solutionReturnedClass = solution.returned::class.java
         if (!(
-            solutionReturnedClass == solutionClass ||
-                (solutionReturnedClass.isArray && solutionReturnedClass.getArrayType() == solutionClass)
-            )
+                solutionReturnedClass == solutionClass ||
+                    (solutionReturnedClass.isArray && solutionReturnedClass.getArrayType() == solutionClass)
+                )
         ) {
             return false
         }
@@ -462,7 +462,7 @@ class TestRunner(
     private fun extractReceivers(
         results: ParameterValues<Result<Any, ParameterGroup>>,
         parameters: Parameters,
-        settings: Settings
+        settings: Settings,
     ): MutableList<Value<Any?>> {
         if (!SolutionSubmissionResultPair(results.solution, results.submission).returnedReceivers()) {
             return mutableListOf()
@@ -481,8 +481,8 @@ class TestRunner(
                     results.solutionCopy.returned,
                     results.submissionCopy.returned,
                     results.unmodifiedCopy.returned,
-                    parameters.complexity
-                )
+                    parameters.complexity,
+                ),
             )
         } else {
             val solutions = results.solution.returned as Array<*>
@@ -501,7 +501,7 @@ class TestRunner(
                     solutionCopies[i],
                     submissionCopies.getOrNull(i),
                     unmodifiedCopies.getOrNull(i),
-                    parameters.complexity
+                    parameters.complexity,
                 )
             }.toList()
         }.toMutableList()
@@ -510,7 +510,7 @@ class TestRunner(
     @Suppress("ReturnCount")
     private fun linkReceivers(
         results: SolutionSubmissionResultPair,
-        settings: Settings
+        settings: Settings,
     ): MutableList<SolutionSubmissionReturnPair> {
         if (!results.returnedReceivers()) {
             return mutableListOf()
@@ -594,7 +594,7 @@ class TestRunner(
                     receivers?.solutionCopy,
                     submission.submission.kotlin.companionObjectInstance,
                     submission.submission.kotlin.companionObjectInstance,
-                    receivers?.complexity ?: ZeroComplexity
+                    receivers?.complexity ?: ZeroComplexity,
                 )
             }
 
@@ -618,7 +618,7 @@ class TestRunner(
 
         val solutionMethodString = solutionExecutable.formatBoundMethodCall(
             parameters.solution.toParameterGroup(),
-            submission.solution.solution
+            submission.solution.solution,
         )
 
         val systemInParameters = systemInParameterGenerator?.generate(this)
@@ -628,12 +628,12 @@ class TestRunner(
             stepReceivers.solution,
             parameters.solution,
             parameters.solutionCopy,
-            systemInParameters?.solution?.get(0) as SystemIn?
+            systemInParameters?.solution?.get(0) as SystemIn?,
         )
         val solutionCopy = solutionExecutable.pairRun(
             stepReceivers.solutionCopy,
             parameters.solutionCopy,
-            systemInParameters = systemInParameters?.solutionCopy?.get(0) as SystemIn?
+            systemInParameters = systemInParameters?.solutionCopy?.get(0) as SystemIn?,
         )
 
         if (solutionResult.threw != null &&
@@ -658,24 +658,24 @@ class TestRunner(
 
         val submissionMethodString = submissionExecutable.formatBoundMethodCall(
             parameters.submission.toParameterGroup(),
-            submission.submission
+            submission.submission,
         )
 
         val submissionResult = submissionExecutable.pairRun(
             stepReceivers.submission,
             parameters.submission,
             parameters.submissionCopy,
-            systemInParameters?.submission?.get(0) as SystemIn?
+            systemInParameters?.submission?.get(0) as SystemIn?,
         )
         val submissionCopy = submissionExecutable.pairRun(
             stepReceivers.submissionCopy,
             parameters.submissionCopy,
-            systemInParameters = systemInParameters?.submissionCopy?.get(0) as SystemIn?
+            systemInParameters = systemInParameters?.submissionCopy?.get(0) as SystemIn?,
         )
 
         val linkedReceivers = linkReceivers(
             SolutionSubmissionResultPair(solutionResult, submissionResult),
-            settings
+            settings,
         )
         val existingReceiverMismatch = linkedReceivers.map {
             Pair(it, submission.findReceiver(runners, it.solution))
@@ -701,19 +701,19 @@ class TestRunner(
             solutionMethodString = solutionMethodString,
             submissionMethodString = submissionMethodString,
             currentRandom = random.lastRandom,
-            randomCount = random.currentIndex
+            randomCount = random.currentIndex,
         )
 
         val unmodifiedCopy = submissionExecutable.pairRun(
             stepReceivers.unmodifiedCopy,
             parameters.unmodifiedCopy,
-            systemInParameters = systemInParameters?.unmodifiedCopy?.get(0) as SystemIn?
+            systemInParameters = systemInParameters?.unmodifiedCopy?.get(0) as SystemIn?,
         )
 
         val createdReceivers = extractReceivers(
             ParameterValues(solutionResult, submissionResult, solutionCopy, submissionCopy, unmodifiedCopy),
             parameters,
-            settings
+            settings,
         )
 
         if (creating && submissionResult.returned != null && submission.solution.instanceValidator != null) {

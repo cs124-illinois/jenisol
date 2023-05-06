@@ -14,7 +14,7 @@ class TestSubmissionDesign : StringSpec(
         examples.java.submissiondesign.noconverter.BadSolution2::class.java.also {
             "${it.testDesignName()}" { it.testDesign() }
         }
-    }
+    },
 )
 
 fun Class<*>.testDesignName(): String = this.name

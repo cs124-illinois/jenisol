@@ -228,22 +228,22 @@ class TestGenerators : StringSpec(
             }
             Two(
                 arrayOf(intArrayOf(1, 2, 3), intArrayOf(4, 5)),
-                arrayOf(booleanArrayOf(true, false), booleanArrayOf(false, true))
+                arrayOf(booleanArrayOf(true, false), booleanArrayOf(false, true)),
             ).also {
                 it shouldBe Two(
                     arrayOf(intArrayOf(1, 2, 3), intArrayOf(4, 5)),
-                    arrayOf(booleanArrayOf(true, false), booleanArrayOf(false, true))
+                    arrayOf(booleanArrayOf(true, false), booleanArrayOf(false, true)),
                 )
             }
         }
-    }
+    },
 )
 
 private fun methodNamed(name: String) = TestGenerators::class.java.declaredMethods
     .find { it.name == name } ?: error("Couldn't find method $name")
 
 private fun Method.testGenerator(
-    typeGenerator: TypeGenerator<*> = Defaults.create(this.genericParameterTypes.first(), cloner = Cloner.shared())
+    typeGenerator: TypeGenerator<*> = Defaults.create(this.genericParameterTypes.first(), cloner = Cloner.shared()),
 ) {
     typeGenerator.simple.forEach { invoke(null, it.solutionCopy) }
     typeGenerator.edge.forEach { invoke(null, it.solutionCopy) }
@@ -259,8 +259,8 @@ private fun Method.testParameterGenerator(
     edgeSize: Int,
     dimensionality: Int = 1,
     mixedSize: Int = (simpleSize + edgeSize).pow(dimensionality) - simpleSize.pow(dimensionality) - edgeSize.pow(
-        dimensionality
-    )
+        dimensionality,
+    ),
 ) {
     val parameterGenerator =
         TypeParameterGenerator(parameters, cloner = Cloner.shared())

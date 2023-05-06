@@ -7,5 +7,5 @@ class TestKotlinExamples : StringSpec(
         examples.kotlin.noreceiver.single.noarguments.correct.Correct::class.java.also {
             "${it.testName()}" { it.test() }
         }
-    }
+    },
 )

@@ -11,7 +11,7 @@ interface Comparator {
 }
 
 class Comparators(
-    private val comparators: MutableMap<Class<*>, Comparator> = mutableMapOf()
+    private val comparators: MutableMap<Class<*>, Comparator> = mutableMapOf(),
 ) : MutableMap<Class<*>, Comparator> by comparators {
     init {
         comparators[Any::class.java] = object : Comparator {
@@ -116,7 +116,7 @@ class Comparators(
                 solution: Any,
                 submission: Any,
                 solutionClass: Class<*>?,
-                submissionClass: Class<*>?
+                submissionClass: Class<*>?,
             ): Boolean =
                 when {
                     solution is Double && submission is Double -> compareDoubles(solution, submission)
@@ -129,7 +129,7 @@ class Comparators(
                 solution: Any,
                 submission: Any,
                 solutionClass: Class<*>?,
-                submissionClass: Class<*>?
+                submissionClass: Class<*>?,
             ): Boolean =
                 when {
                     solution is Double && submission is Double -> compareDoubles(solution, submission)
@@ -175,7 +175,7 @@ fun Any.deepEquals(
     submission: Any?,
     comparators: Comparators,
     solutionClass: Class<*>?,
-    submissionClass: Class<*>?
+    submissionClass: Class<*>?,
 ): Boolean = when {
     this === submission -> true
     submission == null -> false
@@ -183,7 +183,7 @@ fun Any.deepEquals(
         this,
         submission,
         solutionClass,
-        submissionClass
+        submissionClass,
     )
 
     this is ParameterGroup && submission is ParameterGroup ->

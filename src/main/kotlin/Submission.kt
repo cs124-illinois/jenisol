@@ -25,7 +25,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         if (!solution.solution.visibilityMatches(submission)) {
             throw SubmissionDesignClassError(
                 submission,
-                "is not ${solution.solution.getVisibilityModifier() ?: "package private"}"
+                "is not ${solution.solution.getVisibilityModifier() ?: "package private"}",
             )
         }
         if (!submission.isKotlin() && (solution.solution.isFinal() != submission.isFinal())) {
@@ -35,7 +35,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     "is not marked as final but should be"
                 } else {
                     "is marked as final but should not be"
-                }
+                },
             )
         }
         if (solution.solution.isAbstract() != submission.isAbstract()) {
@@ -45,13 +45,13 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     "is not marked as abstract but should be"
                 } else {
                     "is marked as abstract but should not be"
-                }
+                },
             )
         }
         if (solution.solution.superclass != null && solution.solution.superclass != submission.superclass) {
             throw SubmissionDesignClassError(
                 submission,
-                "does not extend ${solution.solution.superclass.name}"
+                "does not extend ${solution.solution.superclass.name}",
             )
         }
         val solutionInterfaces = solution.solution.interfaces.toSet()
@@ -60,14 +60,14 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         if (missingInterfaces.isNotEmpty()) {
             throw SubmissionDesignClassError(
                 submission,
-                "does not implement ${missingInterfaces.joinToString(separator = ", ") { it.name }}"
+                "does not implement ${missingInterfaces.joinToString(separator = ", ") { it.name }}",
             )
         }
         val extraInterfaces = submissionInterfaces.minus(solutionInterfaces)
         if (extraInterfaces.isNotEmpty()) {
             throw SubmissionDesignClassError(
                 submission,
-                "does implements extra interfaces ${extraInterfaces.joinToString(separator = ", ") { it.name }}"
+                "does implements extra interfaces ${extraInterfaces.joinToString(separator = ", ") { it.name }}",
             )
         }
         solution.solution.typeParameters.forEachIndexed { i, type ->
@@ -90,7 +90,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             if (!it.parameterTypes[0].isAssignableFrom(submission)) {
                 throw SubmissionDesignInheritanceError(
                     submission,
-                    it.parameterTypes[0]
+                    it.parameterTypes[0],
                 )
             }
         }
@@ -100,7 +100,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         solution.allFields.filter { it.name != "${"$"}assertionsDisabled" }.map { solutionField ->
             submission.findField(solutionField) ?: throw SubmissionDesignMissingFieldError(
                 submission,
-                solutionField
+                solutionField,
             )
         }.toSet()
 
@@ -130,7 +130,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                         }
                         throw SubmissionDesignKotlinNotAccessibleError(
                             submission,
-                            field
+                            field,
                         )
                     } else {
                         val field = solutionExecutable.name.removePrefix("set").let {
@@ -138,13 +138,13 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                         }
                         throw SubmissionDesignKotlinNotModifiableError(
                             submission,
-                            field
+                            field,
                         )
                     }
                 } else {
                     throw SubmissionDesignMissingMethodError(
                         submission,
-                        solutionExecutable
+                        solutionExecutable,
                     )
                 }
             }
@@ -202,7 +202,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                             }
                             throw SubmissionDesignKotlinIsModifiableError(
                                 submission,
-                                field
+                                field,
                             )
                         } else {
                             val field = executable.name.removePrefix("get").let {
@@ -210,13 +210,13 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                             }
                             throw SubmissionDesignKotlinIsAccessibleError(
                                 submission,
-                                field
+                                field,
                             )
                         }
                     }
                     throw SubmissionDesignExtraMethodError(
                         submission,
-                        executable
+                        executable,
                     )
                 }
             }
@@ -239,7 +239,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
     }
 
     private val comparators = Comparators(
-        mutableMapOf(solution.solution to solution.receiverCompare, submission to solution.receiverCompare)
+        mutableMapOf(solution.solution to solution.receiverCompare, submission to solution.receiverCompare),
     )
 
     fun compare(solution: Any?, submission: Any?, solutionClass: Class<*>? = null, submissionClass: Class<*>? = null) =
@@ -334,7 +334,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     solution.returned,
                     submission.returned,
                     result.solutionClass,
-                    result.submissionClass
+                    result.submissionClass,
                 )
             ) {
                 result.differs.add(TestResult.Differs.RETURN)
@@ -366,7 +366,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         completed: Boolean = false,
         threw: Throwable? = null,
         timeout: Boolean = false,
-        finishedReceivers: Boolean = true
+        finishedReceivers: Boolean = true,
     ) =
         TestResults(
             map { it.testResults as List<TestResult<Any, ParameterGroup>> }.flatten().sortedBy { it.stepCount },
@@ -377,7 +377,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             finishedReceivers,
             count { !it.tested },
             skippedSteps = map { it.skippedTests }.flatten().sorted(),
-            randomTrace = recordingRandom.finish()
+            randomTrace = recordingRandom.finish(),
             // randomCallers = recordingRandom.callers
         )
 
@@ -402,7 +402,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     .map { (executable, weight) ->
                         setTotal += weight
                         setTotal to executable
-                    }.toMap()
+                    }.toMap(),
             )
             total = setTotal
         }
@@ -432,20 +432,15 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         fun more() = methods.size > finished.size
     }
 
-    class RecordingRandom(seed: Long = Random.nextLong(), private val follow: List<Int>? = null) : Random() {
+    class RecordingRandom(seed: Long = nextLong(), private val follow: List<Int>? = null) : Random() {
         private val random = Random(seed)
         private val trace = mutableListOf<Int>()
 
-        // val callers = mutableListOf<String>()
         var currentIndex = 0
         var lastRandom = 0
 
         @Suppress("ThrowingExceptionsWithoutMessageOrCause")
         override fun nextBits(bitCount: Int): Int {
-            /*
-            val e = Exception()
-            callers.add(e.stackTraceToString())
-            */
             return random.nextBits(bitCount).also {
                 trace += it
                 lastRandom = it
@@ -476,7 +471,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
     fun test(
         passedSettings: Settings = Settings(),
         captureOutputControlInput: CaptureOutputControlInput = ::defaultCaptureOutputControlInput,
-        followTrace: List<Int>? = null
+        followTrace: List<Int>? = null,
     ): TestResults {
         if (solution.solution.isDesignOnly() || solution.solution.isAbstract()) {
             throw DesignOnlyTestingError(solution.solution)
@@ -508,14 +503,15 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         val (receiverGenerator, generatorOverrides) = if (!solution.skipReceiver) {
             val receiverGenerator = ReceiverGenerator(random, mutableListOf(), this@Submission)
             val overrideMap = mutableMapOf(
-                (solution.solution as Type) to ({ _: Random, _: Cloner -> receiverGenerator } as TypeGeneratorGenerator)
+                (solution.solution as Type)
+                    to ({ _: Random, _: Cloner -> receiverGenerator } as TypeGeneratorGenerator),
             )
             if (!solution.generatorFactory.typeGenerators.containsKey(Any::class.java)) {
                 overrideMap[(Any::class.java)] = { r: Random, c: Cloner ->
                     ObjectGenerator(
                         r,
                         c,
-                        receiverGenerator
+                        receiverGenerator,
                     )
                 }
             }
@@ -541,7 +537,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 settings,
                 runners,
                 receivers,
-                random
+                random,
             ).also { runner ->
                 if (receivers == null && !solution.skipReceiver) {
                     runner.next(stepCount++)
@@ -586,7 +582,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                         settings,
                         random,
                         timeout = true,
-                        finishedReceivers = finishedReceivers
+                        finishedReceivers = finishedReceivers,
                     )
                 }
 
@@ -622,7 +618,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                                 return runners.toResults(
                                     settings,
                                     random,
-                                    finishedReceivers = finishedReceivers
+                                    finishedReceivers = finishedReceivers,
                                 )
                             }
                         }
@@ -672,7 +668,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 settings,
                 random,
                 completed = true,
-                finishedReceivers = runners.createdCount() >= neededReceivers
+                finishedReceivers = runners.createdCount() >= neededReceivers,
             )
         } catch (e: FollowTraceException) {
             throw e
@@ -688,77 +684,77 @@ class Submission(val solution: Solution, val submission: Class<*>) {
 sealed class SubmissionDesignError(message: String) : RuntimeException(message)
 class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable) : SubmissionDesignError(
     "${klass.name} didn't provide ${
-    if (executable is Method) {
-        "method"
-    } else {
-        "constructor"
-    }
-    } ${executable.fullName(klass.isKotlin())}"
+        if (executable is Method) {
+            "method"
+        } else {
+            "constructor"
+        }
+    } ${executable.fullName(klass.isKotlin())}",
 )
 
 class SubmissionDesignKotlinNotAccessibleError(klass: Class<*>, field: String) : SubmissionDesignError(
-    "Property $field on ${klass.name} is not accessible (no getter is available)"
+    "Property $field on ${klass.name} is not accessible (no getter is available)",
 )
 
 class SubmissionDesignKotlinNotModifiableError(klass: Class<*>, field: String) : SubmissionDesignError(
-    "Property $field on ${klass.name} is not modifiable (no setter is available)"
+    "Property $field on ${klass.name} is not modifiable (no setter is available)",
 )
 
 class SubmissionDesignKotlinIsAccessibleError(klass: Class<*>, field: String) : SubmissionDesignError(
-    "Property $field on ${klass.name} is accessible but should not be (getter is available)"
+    "Property $field on ${klass.name} is accessible but should not be (getter is available)",
 )
 
 class SubmissionDesignKotlinIsModifiableError(klass: Class<*>, field: String) : SubmissionDesignError(
-    "Property $field on ${klass.name} is modifiable but should not be (setter is available)"
+    "Property $field on ${klass.name} is modifiable but should not be (setter is available)",
 )
 
 class SubmissionDesignExtraMethodError(klass: Class<*>, executable: Executable) : SubmissionDesignError(
     "${klass.name} provided extra ${
-    if (executable.isStatic() && !klass.isKotlin()) {
-        "static "
-    } else {
-        ""
-    }
+        if (executable.isStatic() && !klass.isKotlin()) {
+            "static "
+        } else {
+            ""
+        }
     }${
-    if (executable is Method) {
-        "method"
-    } else {
-        "constructor"
-    }
-    } ${executable.fullName(klass.isKotlin())}"
+        if (executable is Method) {
+            "method"
+        } else {
+            "constructor"
+        }
+    } ${executable.fullName(klass.isKotlin())}",
 )
 
 class SubmissionDesignInheritanceError(klass: Class<*>, parent: Class<*>) : SubmissionDesignError(
-    "${klass.name} didn't inherit from ${parent.name}"
+    "${klass.name} didn't inherit from ${parent.name}",
 )
 
 class SubmissionTypeParameterError(klass: Class<*>) : SubmissionDesignError(
-    "${klass.name} has missing, unnecessary, or incorrectly-bounded type parameters"
+    "${klass.name} has missing, unnecessary, or incorrectly-bounded type parameters",
 )
 
 class SubmissionDesignMissingFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
-    "Field ${field.fullName()} is not accessible in ${klass.name} but should be"
+    "Field ${field.fullName()} is not accessible in ${klass.name} but should be",
 )
 
 class SubmissionDesignExtraFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
-    "Field ${field.fullName()} is accessible in ${klass.name} but should not be"
+    "Field ${field.fullName()} is accessible in ${klass.name} but should not be",
 )
 
 class SubmissionStaticFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
     "Field ${field.fullName()} is static in ${klass.name}, " +
-        "but static fields are not permitted for this problem"
+        "but static fields are not permitted for this problem",
 )
 
 class SubmissionStaticPublicFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
-    "Static field ${field.fullName()} in ${klass.name} must be private"
+    "Static field ${field.fullName()} in ${klass.name} must be private",
 )
 
 class SubmissionDesignClassError(klass: Class<*>, message: String) : SubmissionDesignError(
-    "${klass.name} $message"
+    "${klass.name} $message",
 )
 
 class DesignOnlyTestingError(klass: Class<*>) : Exception(
-    "Solution class ${klass.name} is marked as design only"
+    "Solution class ${klass.name} is marked as design only",
 )
 
 @Suppress("SwallowedException")

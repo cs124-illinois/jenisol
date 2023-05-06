@@ -78,7 +78,7 @@ private fun validateTypeMethod(method: Method, name: String, returnsArray: Boole
             2 -> {
                 check(
                     method.parameterTypes[0] == Int::class.java &&
-                        method.parameterTypes[1] == Random::class.java
+                        method.parameterTypes[1] == Random::class.java,
                 ) { message }
             }
             else -> error(message)
@@ -143,7 +143,7 @@ annotation class RandomParameters(val value: String = "", val fastCopy: Boolean 
                 2 -> {
                     check(
                         method.parameterTypes[0] == Int::class.java &&
-                            method.parameterTypes[1] == Random::class.java
+                            method.parameterTypes[1] == Random::class.java,
                     ) { message }
                 }
                 else -> error(message)
@@ -213,7 +213,7 @@ annotation class InstanceValidator {
             check(method.isStatic()) { "@$name methods must be static" }
             check(
                 method.parameterTypes.size == 1 &&
-                    method.parameterTypes[0] == Object::class.java
+                    method.parameterTypes[0] == Object::class.java,
             ) {
                 "@${RandomParameters.name} methods must accept parameters (Object instance)"
             }
@@ -250,7 +250,7 @@ annotation class Verify {
                             .actualTypeArguments[0]
                         ).compareBoxed(returnType) &&
                     (method.genericParameterTypes[0] as ParameterizedType)
-                        .actualTypeArguments[1].parameterGroupMatches(parameterTypes)
+                        .actualTypeArguments[1].parameterGroupMatches(parameterTypes),
             ) {
                 "@$name methods must accept parameters " +
                     "(${TestResult::class.java.simpleName}<${returnType.typeName}> results)"
@@ -278,7 +278,7 @@ annotation class Both {
             check(
                 method.parameterTypes.size == 1 &&
                     method.parameterTypes[0] !== solution &&
-                    method.parameterTypes[0].isAssignableFrom(solution)
+                    method.parameterTypes[0].isAssignableFrom(solution),
             ) {
                 "@$name methods must accept a single parameter that the solution class inherits from"
             }
@@ -302,7 +302,7 @@ annotation class Compare {
             }
             check(
                 method.parameterTypes.size == 2 &&
-                    method.parameterTypes[0] === method.parameterTypes[1]
+                    method.parameterTypes[0] === method.parameterTypes[1],
             ) {
                 "@$name methods must accept two parameters of the same type"
             }
@@ -357,7 +357,7 @@ fun Executable.isJenisol() = setOf(
     Both::class.java,
     FilterParameters::class.java,
     InstanceValidator::class.java,
-    Compare::class.java
+    Compare::class.java,
 ).any {
     isAnnotationPresent(it)
 }
@@ -378,7 +378,7 @@ private val parameterGroupTypes = setOf(
     One::class.java,
     Two::class.java,
     Three::class.java,
-    Four::class.java
+    Four::class.java,
 )
 
 sealed class ParameterGroup {
@@ -534,7 +534,7 @@ class Four<I, J, K, L>(
     setFirst: I,
     setSecond: J,
     setThird: K,
-    setFourth: L
+    setFourth: L,
 ) : ParameterGroup() {
     @JvmField
     val first: I = if (setFirst is String) {
@@ -643,7 +643,7 @@ internal fun <T> Array<out T>?.safeContentDeepToString(): String {
 @Suppress("ComplexMethod")
 private fun <T> Array<out T>.safeContentDeepToStringInternal(
     result: StringBuilder,
-    processed: MutableList<Array<*>>
+    processed: MutableList<Array<*>>,
 ) {
     if (this in processed) {
         result.append("[...]")

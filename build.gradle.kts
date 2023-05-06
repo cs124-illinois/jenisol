@@ -4,14 +4,14 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.github.cs124-illinois"
-version = "2023.3.0"
+version = "2023.5.0"
 
 plugins {
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.8.21"
     java
     `maven-publish`
 
-    id("org.jmailen.kotlinter") version "3.13.0"
+    id("org.jmailen.kotlinter") version "3.14.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
 
@@ -24,12 +24,12 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
-    implementation("io.github.classgraph:classgraph:4.8.155")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.21")
+    implementation("io.github.classgraph:classgraph:4.8.157")
     implementation("io.github.kostaskougios:cloning:1.10.3")
 
-    testImplementation("io.kotest:kotest-runner-junit5:5.5.5")
-    testImplementation("org.slf4j:slf4j-simple:2.0.6")
+    testImplementation("io.kotest:kotest-runner-junit5:5.6.1")
+    testImplementation("org.slf4j:slf4j-simple:2.0.7")
 }
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
@@ -110,7 +110,4 @@ publishing {
             from(components["java"])
         }
     }
-}
-kotlinter {
-    disabledRules = arrayOf("filename")
 }

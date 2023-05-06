@@ -417,5 +417,5 @@ class TestJavaExamples : StringSpec(
                 firstSolution.checkFields(third)
             }
         }
-    }
+    },
 )

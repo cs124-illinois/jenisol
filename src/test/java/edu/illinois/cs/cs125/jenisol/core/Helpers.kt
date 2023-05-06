@@ -15,7 +15,7 @@ fun Class<*>.testName() = packageName.removePrefix("examples.")
 
 val testingStepsShouldNotContain = setOf(
     TestResult.Type.CONSTRUCTOR,
-    TestResult.Type.INITIALIZER
+    TestResult.Type.INITIALIZER,
 )
 
 data class TestingClasses(
@@ -24,7 +24,7 @@ data class TestingClasses(
     val otherSolutions: List<Class<*>>,
     val incorrect: List<Class<*>>,
     val badReceivers: List<Class<*>>,
-    val badDesign: List<Class<*>>
+    val badDesign: List<Class<*>>,
 )
 
 suspend fun Submission.testWithTimeout(settings: Settings, followTrace: List<Int>? = null): TestResults {
@@ -51,7 +51,7 @@ fun Class<*>.testingClasses(): TestingClasses {
 
     val testingClasses = if (packageClasses.find { it.isKotlinAnchor() } != null) {
         ClassGraph().acceptPackages(
-            packageName.split(".").dropLast(1).joinToString(".")
+            packageName.split(".").dropLast(1).joinToString("."),
         ).scan().allClasses.map { it.loadClass() }
     } else {
         packageClasses
@@ -79,14 +79,14 @@ suspend fun Solution.fullTest(
     seed: Int,
     isCorrect: Boolean,
     solutionResults: TestResults? = null,
-    overrideMaxCount: Int = 0
+    overrideMaxCount: Int = 0,
 ): Pair<TestResults, TestResults> {
     val baseSettings = Settings(
         shrink = true,
         seed = seed,
         testing = true,
         minTestCount = 64.coerceAtMost(maxCount).coerceAtLeast(overrideMaxCount),
-        maxTestCount = 1024.coerceAtMost(maxCount).coerceAtLeast(overrideMaxCount)
+        maxTestCount = 1024.coerceAtMost(maxCount).coerceAtLeast(overrideMaxCount),
     )
 
     @Suppress("RethrowCaughtException")
@@ -159,7 +159,7 @@ suspend fun Solution.fullTest(
             runAll = !isCorrect,
             testCount = testAllCounts,
             minTestCount = -1,
-            maxTestCount = -1
+            maxTestCount = -1,
         )
 
     val first = submissionKlass.testWithTimeout(testAllSettings, followTrace = solutionResults?.randomTrace)
@@ -205,7 +205,7 @@ suspend fun Class<*>.test(overrideMaxCount: Int = 0) = this.testingClasses().app
                     primarySolution,
                     seed = 124,
                     isCorrect = true,
-                    overrideMaxCount = overrideMaxCount
+                    overrideMaxCount = overrideMaxCount,
                 ).also { (results) ->
                     check(results.succeeded) { "Solution did not pass testing: ${results.explain()}" }
                 }
@@ -221,7 +221,7 @@ suspend fun Class<*>.test(overrideMaxCount: Int = 0) = this.testingClasses().app
                         seed = 124,
                         isCorrect = true,
                         solutionResults = solutionResults,
-                        overrideMaxCount = overrideMaxCount
+                        overrideMaxCount = overrideMaxCount,
                     ).first.also { results ->
                         check(!results.timeout)
                         check(results.succeeded) {
@@ -248,7 +248,7 @@ suspend fun Class<*>.test(overrideMaxCount: Int = 0) = this.testingClasses().app
                         seed = 124,
                         isCorrect = false,
                         solutionResults = solutionResults,
-                        overrideMaxCount = overrideMaxCount
+                        overrideMaxCount = overrideMaxCount,
                     ).first.also { results ->
                         results.threw shouldBe null
                         results.timeout shouldBe false

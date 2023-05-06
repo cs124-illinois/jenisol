@@ -16,11 +16,11 @@ class TestHelpers : StringSpec({
         val method = Test::class.java.declaredMethods.first()
         method.formatBoundMethodCall(
             parameters,
-            Test::class.java
+            Test::class.java,
         ) shouldBe """method(int first = 1, String second = "two")"""
         method.formatBoundMethodCall(
             parameters,
-            KotlinTest::class.java
+            KotlinTest::class.java,
         ) shouldBe """method(first: Int = 1, second: String = "two")"""
     }
     "should reformat types properly" {

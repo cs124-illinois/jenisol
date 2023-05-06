@@ -20,7 +20,7 @@ fun List<Value<Any>>.findWithComplexity(complexity: Complexity, random: Random):
 class ReceiverGenerator(
     val random: Random = Random,
     val receivers: MutableList<Value<Any>>,
-    val submission: Submission
+    val submission: Submission,
 ) : TypeGenerator<Any> {
 
     override val simple: Set<Value<Any>>
