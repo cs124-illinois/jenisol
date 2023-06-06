@@ -99,18 +99,18 @@ class GeneratorFactory(private val executables: Set<Executable>, val solution: S
                     null
                 }
             }?.also { matched ->
-            val field = matched.first().fixedParametersField!!
-            val methods = matched.map { it.target }
-            if (!field.fixedParametersMatchAll()) {
-                error(
-                    """Found @FixedParameter annotations that matched multiple methods
+                val field = matched.first().fixedParametersField!!
+                val methods = matched.map { it.target }
+                if (!field.fixedParametersMatchAll()) {
+                    error(
+                        """Found @FixedParameter annotations that matched multiple methods
                     |$field matched ${matched.size} methods: $methods
                     |If you want to match multiple methods, use @FixedParameters("*")
                     |If you want to target one method, use @FixedParameters(methodName)
-                    """.trimMargin(),
-                )
+                        """.trimMargin(),
+                    )
+                }
             }
-        }
 
         methodParameterGenerators.values
             .mapNotNull { it.randomParameters }
@@ -125,18 +125,18 @@ class GeneratorFactory(private val executables: Set<Executable>, val solution: S
                     null
                 }
             }?.also { matched ->
-            val method = matched.first().randomParameters!!
-            val methods = matched.map { it.target }
-            if (!method.randomParametersMatchAll()) {
-                error(
-                    """Found @RandomParameters annotations that matched multiple methods
+                val method = matched.first().randomParameters!!
+                val methods = matched.map { it.target }
+                if (!method.randomParametersMatchAll()) {
+                    error(
+                        """Found @RandomParameters annotations that matched multiple methods
                     |$method matched ${matched.size} methods: $methods
                     |If you want to match multiple methods, use @RandomParameters("*")
                     |If you want to target one method, use @RandomParameters(methodName)
-                    """.trimMargin(),
-                )
+                        """.trimMargin(),
+                    )
+                }
             }
-        }
 
         solution.solution.declaredFields.filter { it.isFixedParameters() }.forEach { field ->
             val used = methodParameterGenerators.values.filter { it.fixedParametersField == field }
@@ -492,37 +492,37 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
                     "Multiple @${FixedParameters.name} annotations match method ${target.name}"
                 }
             }.firstOrNull()?.let { field ->
-            fixedParametersField = field
-            val values = field.get(null)
-            check(values is Collection<*>) { "@${FixedParameters.name} field does not contain a collection" }
-            check(values.isNotEmpty()) { "@${FixedParameters.name} field contains as empty collection" }
-            @Suppress("SwallowedException")
-            val actualValues = try {
-                values.filterNotNull().forEach { it as ParameterGroup }
-                @Suppress("UNCHECKED_CAST")
-                values as Collection<ParameterGroup>
-            } catch (e: ClassCastException) {
-                values.map { One(it) }
-            }
-            actualValues.forEach { group ->
-                check(group.toList().none { it != null && it::class.java == solution }) {
-                    """
+                fixedParametersField = field
+                val values = field.get(null)
+                check(values is Collection<*>) { "@${FixedParameters.name} field does not contain a collection" }
+                check(values.isNotEmpty()) { "@${FixedParameters.name} field contains as empty collection" }
+                @Suppress("SwallowedException")
+                val actualValues = try {
+                    values.filterNotNull().forEach { it as ParameterGroup }
+                    @Suppress("UNCHECKED_CAST")
+                    values as Collection<ParameterGroup>
+                } catch (e: ClassCastException) {
+                    values.map { One(it) }
+                }
+                actualValues.forEach { group ->
+                    check(group.toList().none { it != null && it::class.java == solution }) {
+                        """
         |@${FixedParameters.name} field should not contain receiver objects, since this will not work as you expect.
         |Target the constructor with @${FixedParameters.name} if you need to create receivers."""
-                        .trimMargin().trim()
+                            .trimMargin().trim()
+                    }
+                    val cloner = Cloner.shared()
+                    val solutionParameters = group.deepCopy(cloner)
+                    val submissionParameters = group.deepCopy(cloner)
+                    check(solutionParameters !== submissionParameters) {
+                        "@${FixedParameters.name} field produces referentially equal copies"
+                    }
+                    check(solutionParameters == submissionParameters) {
+                        "@${FixedParameters.name} field does not produce equal copies"
+                    }
                 }
-                val cloner = Cloner.shared()
-                val solutionParameters = group.deepCopy(cloner)
-                val submissionParameters = group.deepCopy(cloner)
-                check(solutionParameters !== submissionParameters) {
-                    "@${FixedParameters.name} field produces referentially equal copies"
-                }
-                check(solutionParameters == submissionParameters) {
-                    "@${FixedParameters.name} field does not produce equal copies"
-                }
+                actualValues
             }
-            actualValues
-        }
         randomParameters = solution.declaredMethods
             .filter { method -> method.isRandomParameters() }
             .filter { method -> RandomParameters.validate(method, solution).compareBoxed(parameterTypes) }

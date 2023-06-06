@@ -262,7 +262,7 @@ class Solution(val solution: Class<*>) {
     /*
     @Suppress("unused")
     fun getCounts() = setCounts(Settings.DEFAULTS)
-    */
+     */
 
     val verifiers = solution.declaredMethods.filter { it.isVerify() }.associateBy { verifier ->
         val matchingMethod = methodsToTest.filter { methodToTest ->
@@ -326,12 +326,13 @@ class Solution(val solution: Class<*>) {
                 "Couldn't find field ${field.name} on alternate solution"
             }
 
-            val (firstValue, secondValue) = @Suppress("TooGenericExceptionCaught")
-            try {
-                Pair(field.get(null), otherField.get(null))
-            } catch (e: Exception) {
-                error("Retrieving field ${field.name} failed: $e")
-            }
+            val (firstValue, secondValue) =
+                @Suppress("TooGenericExceptionCaught")
+                try {
+                    Pair(field.get(null), otherField.get(null))
+                } catch (e: Exception) {
+                    error("Retrieving field ${field.name} failed: $e")
+                }
             check(firstValue.deepEquals(secondValue, Comparators(), null, null)) {
                 error(
                     "Field ${field.name} was not equal between solution instances. " +
