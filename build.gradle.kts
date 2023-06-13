@@ -4,10 +4,10 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.github.cs124-illinois"
-version = "2023.6.0"
+version = "2023.6.1"
 
 plugins {
-    kotlin("jvm") version "1.8.21"
+    kotlin("jvm") version "1.8.22"
     java
     `maven-publish`
 
@@ -15,7 +15,7 @@ plugins {
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
 
-    id("com.github.ben-manes.versions") version "0.46.0"
+    id("com.github.ben-manes.versions") version "0.47.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.0"
 }
 repositories {
@@ -24,7 +24,7 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.21")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.22")
     implementation("io.github.classgraph:classgraph:4.8.160")
     implementation("io.github.kostaskougios:cloning:1.10.3")
 
