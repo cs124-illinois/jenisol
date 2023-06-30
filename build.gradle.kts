@@ -4,7 +4,7 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.github.cs124-illinois"
-version = "2023.6.1"
+version = "2023.6.2"
 
 plugins {
     kotlin("jvm") version "1.8.22"
@@ -21,12 +21,11 @@ plugins {
 repositories {
     mavenCentral()
     maven(url = "https://jitpack.io")
-    maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
 }
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.22")
     implementation("io.github.classgraph:classgraph:4.8.160")
-    implementation("io.github.kostaskougios:cloning:1.10.3")
+    implementation("io.github.kostaskougios:cloning:master-SNAPSHOT")
 
     testImplementation("io.kotest:kotest-runner-junit5:5.6.2")
     testImplementation("org.slf4j:slf4j-simple:2.0.7")
