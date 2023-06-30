@@ -45,6 +45,14 @@ class Solution(val solution: Class<*>) {
                 checkDesign(it.isNotEmpty() || allFields.isNotEmpty()) { "Found no methods or fields to test" }
             }
 
+    val allExecutablesWithPrivate = (solution.declaredMethods.toSet() + solution.declaredConstructors.toSet())
+        .filterNotNull()
+        .filter {
+            ((!it.isJenisol() || it.isCheckDesign())) &&
+                !it.isSynthetic &&
+                !(it is Method && it.isBridge)
+        }.toSet()
+
     init {
         allExecutables.forEach { it.isAccessible = true }
     }
@@ -74,6 +82,19 @@ class Solution(val solution: Class<*>) {
         }
     }.toSet()
     val methodsToTest = (allExecutables - receiverGenerators + bothExecutables).also {
+        if (it.isEmpty() && !solution.isDesignOnly()) {
+            when {
+                allExecutablesWithPrivate.isNotEmpty() -> {
+                    failDesign {
+                        "Methods to test must be public or package-private, but all found are private"
+                    }
+                }
+
+                else -> {
+                    failDesign { "Found methods that generate receivers but no ways to test them" }
+                }
+            }
+        }
         checkDesign(it.isNotEmpty() || solution.isDesignOnly()) {
             "Found methods that generate receivers but no ways to test them"
         }
@@ -459,11 +480,23 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
             }
         }$returnType$name(${parameters.joinToString(", ") { it.type.cleanCanonicalName() }})"
     } else {
-        "${visibilityModifier ?: ""}${if (!isConstructor) { "fun " } else {""}}$name(${
+        "${visibilityModifier ?: ""}${
+            if (!isConstructor) {
+                "fun "
+            } else {
+                ""
+            }
+        }$name(${
             parameters.joinToString(", ") {
                 it.type.cleanCanonicalName().toKotlinType()
             }
-        })${if (!isConstructor) {": $returnType"} else {""}}"
+        })${
+            if (!isConstructor) {
+                ": $returnType"
+            } else {
+                ""
+            }
+        }"
     }
 }
 
@@ -635,6 +668,10 @@ fun Class<*>.findField(solutionField: Field) = this.declaredFields.find { submis
 }
 
 class SolutionDesignError(message: String?) : Exception(message)
+
+private fun failDesign(message: () -> Any) {
+    designError(message().toString())
+}
 
 private fun checkDesign(check: Boolean, message: () -> Any) {
     if (!check) {
