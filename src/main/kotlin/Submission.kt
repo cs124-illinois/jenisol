@@ -19,8 +19,11 @@ import java.lang.reflect.Method
 import java.lang.reflect.Type
 import java.util.TreeMap
 import kotlin.random.Random
+import kotlin.reflect.full.memberFunctions
 
 class Submission(val solution: Solution, val submission: Class<*>) {
+    private val isKotlin = submission.getAnnotation(Metadata::class.java) != null
+
     init {
         if (!solution.solution.visibilityMatches(submission)) {
             throw SubmissionDesignClassError(
@@ -28,7 +31,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 "is not ${solution.solution.getVisibilityModifier() ?: "package private"}",
             )
         }
-        if (!submission.isKotlin() && (solution.solution.isFinal() != submission.isFinal())) {
+        if (!isKotlin && (solution.solution.isFinal() != submission.isFinal())) {
             throw SubmissionDesignClassError(
                 submission,
                 if (solution.solution.isFinal()) {
@@ -106,7 +109,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
 
     val submissionExecutables = solution.allExecutables
         .filter {
-            !submission.isKotlin() || (!solution.skipReceiver || it !in solution.receiverGenerators)
+            !isKotlin || (!solution.skipReceiver || it !in solution.receiverGenerators)
         }.associate { solutionExecutable ->
             when (solutionExecutable) {
                 is Constructor<*> -> submission.findConstructor(solutionExecutable, solution.solution)
@@ -117,7 +120,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 solutionExecutable to executable
             } ?: run {
                 @Suppress("ComplexCondition")
-                if (submission.isKotlin() &&
+                if (isKotlin &&
                     solutionExecutable is Method &&
                     (
                         solutionExecutable.name.startsWith("get") ||
@@ -152,7 +155,40 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             if (solution.initializer != null) {
                 it[solution.initializer] = solution.initializer
             }
-        }.toMap()
+        }.toMap().also { executableMap ->
+
+            val kotlinReflectionSupported = isKotlin && try {
+                submission.kotlin.memberFunctions
+                true
+            } catch (e: UnsupportedOperationException) {
+                false
+            }
+
+            if (kotlinReflectionSupported) {
+                @Suppress("MagicNumber")
+                executableMap.keys
+                    .filterIsInstance<Method>()
+                    .filter { it.name.length > 3 && (it.name.startsWith("get") || it.name.startsWith("set")) }
+                    .filter {
+                        // Check standard getter and setter syntax
+                        if (it.name.startsWith("get")) {
+                            it.parameters.isEmpty() && it.returnType.name != "void"
+                        } else {
+                            it.parameters.size == 1 && it.returnType.name == "void"
+                        }
+                    }
+                    .firstOrNull { method -> submission.kotlin.memberFunctions.map { it.name }.contains(method.name) }
+                    ?.also { method ->
+                        val name = method.name
+                        val field = name.removePrefix("set").removePrefix("get").let {
+                            it[0].lowercase() + it.substring(1)
+                        }
+                        if (!method.hasKotlinMirrorOK()) {
+                            throw KotlinBadSetterOrGetter(field, name)
+                        }
+                    }
+            }
+        }
 
     init {
         if (submission != solution.solution) {
@@ -160,7 +196,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 !it.isPrivate() && !it.isSynthetic && !(it is Method && it.isBridge)
             }.forEach { executable ->
                 if (executable !in submissionExecutables.values) {
-                    if (submission.isKotlin()) {
+                    if (isKotlin) {
                         @Suppress("MagicNumber")
                         if (executable is Method && executable.name.startsWith("get") && executable.name.length > 3) {
                             val setterName = executable.name.replace("get", "set")
@@ -192,7 +228,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                         }
                     }
                     @Suppress("ComplexCondition", "MagicNumber")
-                    if (submission.isKotlin() && executable is Method &&
+                    if (isKotlin && executable is Method &&
                         executable.name.length > 3 &&
                         (executable.name.startsWith("set") || executable.name.startsWith("get"))
                     ) {
@@ -222,7 +258,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             }
             submission.declaredFields.toSet().filter {
                 it.name != "${"$"}assertionsDisabled" &&
-                    !(submission.isKotlin() && it.name == "Companion")
+                    !(isKotlin && it.name == "Companion")
             }.forEach {
                 if (!it.isPrivate() && it !in submissionFields) {
                     throw SubmissionDesignExtraFieldError(submission, it)
@@ -755,6 +791,10 @@ class SubmissionDesignClassError(klass: Class<*>, message: String) : SubmissionD
 
 class DesignOnlyTestingError(klass: Class<*>) : Exception(
     "Solution class ${klass.name} is marked as design only",
+)
+
+class KotlinBadSetterOrGetter(property: String, bad: String) : SubmissionDesignError(
+    "Kotlin class should declare a property $property and not manually implement $bad",
 )
 
 @Suppress("SwallowedException")

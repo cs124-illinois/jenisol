@@ -280,11 +280,6 @@ class Solution(val solution: Class<*>) {
         return settings.copy(testCount = testCount, methodCount = methodCount, receiverCount = receiverCount)
     }
 
-    /*
-    @Suppress("unused")
-    fun getCounts() = setCounts(Settings.DEFAULTS)
-     */
-
     val verifiers = solution.declaredMethods.filter { it.isVerify() }.associateBy { verifier ->
         val matchingMethod = methodsToTest.filter { methodToTest ->
             val returnType = when (methodToTest) {
@@ -327,6 +322,17 @@ class Solution(val solution: Class<*>) {
             submissionClass: Class<*>?,
         ): Boolean =
             true
+    }
+
+    init {
+        @Suppress("MagicNumber")
+        solution.declaredMethods
+            .filter { it.hasKotlinMirrorOK() }
+            .forEach {
+                check(it.name.length > 3 && (it.name.startsWith("set") || it.name.startsWith("get"))) {
+                    "Can only use @KotlinMirrorOK on Java setters and getters"
+                }
+            }
     }
 
     fun submission(submission: Class<*>) = Submission(this, submission)

@@ -4,7 +4,7 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.github.cs124-illinois"
-version = "2023.6.2"
+version = "2023.7.0"
 
 plugins {
     kotlin("jvm") version "1.8.22"

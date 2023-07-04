@@ -31,7 +31,9 @@ suspend fun Submission.testWithTimeout(settings: Settings, followTrace: List<Int
     val runnable = object : Runnable {
         var results: TestResults? = null
         override fun run() {
-            results = this@testWithTimeout.test(settings, followTrace = followTrace)
+            try {
+                results = this@testWithTimeout.test(settings, followTrace = followTrace)
+            } catch (_: Exception) {}
         }
     }
     withContext(Dispatchers.Default) {
@@ -236,8 +238,14 @@ suspend fun Class<*>.test(overrideMaxCount: Int = 0) = this.testingClasses().app
                 check(isNotEmpty()) { "No incorrect examples.java.examples for $testName" }
             }.forEach { incorrect ->
                 if (incorrect in badDesign) {
+                    @Suppress("RethrowCaughtException")
                     shouldThrow<SubmissionDesignError> {
-                        submission(incorrect)
+                        try {
+                            submission(incorrect)
+                        } catch (e: Exception) {
+                            // println(e)
+                            throw e
+                        }
                     }
                 } else {
                     check(!primarySolution.isDesignOnly()) {

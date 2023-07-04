@@ -349,6 +349,12 @@ annotation class NotNull
 
 fun Parameter.isNotNull() = isAnnotationPresent(NotNull::class.java)
 
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class KotlinMirrorOK
+
+fun Executable.hasKotlinMirrorOK() = isAnnotationPresent(KotlinMirrorOK::class.java)
+
 fun Executable.isJenisol() = setOf(
     RandomType::class.java,
     RandomParameters::class.java,
