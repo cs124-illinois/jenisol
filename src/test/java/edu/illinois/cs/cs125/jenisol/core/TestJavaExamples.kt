@@ -402,6 +402,9 @@ class TestJavaExamples : StringSpec(
         examples.java.receiver.kotlinfauxpropertywhitelist.Correct::class.java.also {
             "${it.testName()}" { it.test() }
         }
+        examples.java.noreceiver.emptyarrayincorrect.Correct::class.java.also {
+            "${it.testName()}" { it.test() }
+        }
         // Tests that should fail
         examples.java.noreceiver.filternotnullwithrandomgeneratesnull.Correct::class.java.also {
             "${it.testName()}" {

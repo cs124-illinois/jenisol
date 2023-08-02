@@ -507,7 +507,7 @@ class ArrayGenerator(
         }
         return (
             Array.newInstance(klass, arraySize).also { array ->
-                (0 until arraySize).forEach { index ->
+                for (index in 0 until arraySize) {
                     val value = if (componentGenerator is ArrayGenerator) {
                         check(nextComplexity != null) { "Invalid complexity split" }
                         componentGenerator.random(nextComplexity, componentComplexity, false, runner)
