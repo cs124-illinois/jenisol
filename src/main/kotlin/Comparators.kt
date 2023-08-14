@@ -8,7 +8,10 @@ import kotlin.math.abs
 interface Comparator {
     fun compare(solution: Any, submission: Any, solutionClass: Class<*>?, submissionClass: Class<*>?): Boolean
     val descendants: Boolean
+    val isInterface: Boolean
 }
+
+const val DEFAULT_ITERABLE_LENGTH = 1024
 
 class Comparators(
     private val comparators: MutableMap<Class<*>, Comparator> = mutableMapOf(),
@@ -16,11 +19,14 @@ class Comparators(
     init {
         comparators[Any::class.java] = object : Comparator {
             override val descendants = false
+            override val isInterface = false
+
             override fun compare(solution: Any, submission: Any, solutionClass: Class<*>?, submissionClass: Class<*>?) =
                 true
         }
         comparators[Throwable::class.java] = object : Comparator {
             override val descendants = true
+            override val isInterface = false
 
             @Suppress("LongMethod")
             override fun compare(solution: Any, submission: Any, solutionClass: Class<*>?, submissionClass: Class<*>?) =
@@ -112,6 +118,8 @@ class Comparators(
         }
         comparators[Double::class.java] = object : Comparator {
             override val descendants = false
+            override val isInterface = false
+
             override fun compare(
                 solution: Any,
                 submission: Any,
@@ -125,6 +133,8 @@ class Comparators(
         }
         comparators[java.lang.Double::class.java] = object : Comparator {
             override val descendants = false
+            override val isInterface = false
+
             override fun compare(
                 solution: Any,
                 submission: Any,
@@ -133,6 +143,25 @@ class Comparators(
             ): Boolean =
                 when {
                     solution is Double && submission is Double -> compareDoubles(solution, submission)
+                    else -> false
+                }
+        }
+        comparators[java.util.Iterator::class.java] = object : Comparator {
+            override val descendants = false
+            override val isInterface = true
+
+            override fun compare(
+                solution: Any,
+                submission: Any,
+                solutionClass: Class<*>?,
+                submissionClass: Class<*>?,
+            ): Boolean =
+                when {
+                    solution is Iterator<*> && submission is Iterator<*> -> {
+                        val solutionList = solution.asSequence().take(DEFAULT_ITERABLE_LENGTH).toList()
+                        val submissionList = submission.asSequence().take(DEFAULT_ITERABLE_LENGTH).toList()
+                        solutionList == submissionList
+                    }
                     else -> false
                 }
         }
@@ -149,6 +178,11 @@ class Comparators(
                 return current
             }
             current = current.superclass
+        }
+        for (implements in klass.interfaces) {
+            if (comparators[implements]?.isInterface == true) {
+                return implements
+            }
         }
         return null
     }
@@ -185,9 +219,10 @@ fun Any.deepEquals(
         solutionClass,
         submissionClass,
     )
-
     this is ParameterGroup && submission is ParameterGroup ->
         this.toArray().deepEquals(submission.toArray(), comparators, solutionClass, submissionClass)
+
+    this == submission -> true
 
     this.isAnyArray() != submission.isAnyArray() -> false
     this.isAnyArray() && submission.isAnyArray() -> {
@@ -203,7 +238,7 @@ fun Any.deepEquals(
             }
     }
 
-    else -> this.lambdaGuessEquals(submission) || this == submission
+    else -> this.lambdaGuessEquals(submission)
 }
 
 const val DEFAULT_DOUBLE_THRESHOLD = 0.000001

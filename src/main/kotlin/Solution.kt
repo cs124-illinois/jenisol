@@ -315,6 +315,7 @@ class Solution(val solution: Class<*>) {
 
     val receiverCompare = object : Comparator {
         override val descendants = true
+        override val isInterface = false
         override fun compare(
             solution: Any,
             submission: Any,

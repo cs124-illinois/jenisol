@@ -366,14 +366,23 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     result.differs.add(TestResult.Differs.RETURN)
                     result.message = e.message
                 }
-            } else if (!compare(
-                    solution.returned,
-                    submission.returned,
-                    result.solutionClass,
-                    result.submissionClass,
-                )
-            ) {
-                result.differs.add(TestResult.Differs.RETURN)
+            } else {
+                @Suppress("TooGenericExceptionCaught")
+                try {
+                    compare(
+                        solution.returned,
+                        submission.returned,
+                        result.solutionClass,
+                        result.submissionClass,
+                    ).also {
+                        if (!it) {
+                            result.differs.add(TestResult.Differs.RETURN)
+                        }
+                    }
+                } catch (e: Throwable) {
+                    result.differs.add(TestResult.Differs.RETURN)
+                    result.message = e.message
+                }
             }
         }
         if (result.type == TestResult.Type.FACTORY_METHOD &&

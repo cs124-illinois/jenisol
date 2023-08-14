@@ -30,10 +30,13 @@ data class TestingClasses(
 suspend fun Submission.testWithTimeout(settings: Settings, followTrace: List<Int>? = null): TestResults {
     val runnable = object : Runnable {
         var results: TestResults? = null
+        var error: Exception? = null
         override fun run() {
             try {
                 results = this@testWithTimeout.test(settings, followTrace = followTrace)
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                error = e
+            }
         }
     }
     withContext(Dispatchers.Default) {
@@ -43,6 +46,9 @@ suspend fun Submission.testWithTimeout(settings: Settings, followTrace: List<Int
             interrupt()
             join(1024)
         }
+    }
+    if (runnable.error != null) {
+        throw runnable.error!!
     }
     return runnable.results!!
 }
