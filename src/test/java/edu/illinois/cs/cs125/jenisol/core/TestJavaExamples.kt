@@ -411,6 +411,9 @@ class TestJavaExamples : StringSpec(
         examples.java.noreceiver.returnsiterator.Correct::class.java.also {
             "${it.testName()}" { it.test() }
         }
+        examples.java.noreceiver.returnsstream.Correct::class.java.also {
+            "${it.testName()}" { it.test() }
+        }
         // Tests that should fail
         examples.java.noreceiver.filternotnullwithrandomgeneratesnull.Correct::class.java.also {
             "${it.testName()}" {

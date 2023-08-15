@@ -3,6 +3,7 @@ package edu.illinois.cs.cs125.jenisol.core
 import edu.illinois.cs.cs125.jenisol.core.generators.boxArray
 import edu.illinois.cs.cs125.jenisol.core.generators.isAnyArray
 import edu.illinois.cs.cs125.jenisol.core.generators.isLambdaMethod
+import java.util.stream.Stream
 import kotlin.math.abs
 
 interface Comparator {
@@ -165,6 +166,25 @@ class Comparators(
                     else -> false
                 }
         }
+        comparators[java.util.stream.Stream::class.java] = object : Comparator {
+            override val descendants = false
+            override val isInterface = true
+
+            override fun compare(
+                solution: Any,
+                submission: Any,
+                solutionClass: Class<*>?,
+                submissionClass: Class<*>?,
+            ): Boolean =
+                when {
+                    solution is Stream<*> && submission is Stream<*> -> {
+                        val solutionList = solution.limit(DEFAULT_ITERABLE_LENGTH.toLong()).toList()
+                        val submissionList = submission.limit(DEFAULT_ITERABLE_LENGTH.toLong()).toList()
+                        solutionList == submissionList
+                    }
+                    else -> false
+                }
+        }
     }
 
     @Suppress("ReturnCount")
@@ -172,8 +192,12 @@ class Comparators(
         if (comparators.containsKey(klass)) {
             return klass
         }
+
         var current: Class<*>? = klass
         while (current != null) {
+            if (current.name == "java.util.stream.AbstractPipeline") {
+                return java.util.stream.Stream::class.java
+            }
             if (comparators[current]?.descendants == true) {
                 return current
             }
