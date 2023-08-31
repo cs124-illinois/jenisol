@@ -4,10 +4,10 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.github.cs124-illinois"
-version = "2023.8.1"
+version = "2023.8.2"
 
 plugins {
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "1.9.10"
     java
     `maven-publish`
 
@@ -23,7 +23,7 @@ repositories {
     maven(url = "https://jitpack.io")
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.22")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.10")
     implementation("io.github.classgraph:classgraph:4.8.162")
     implementation("io.github.kostaskougios:cloning:master-SNAPSHOT")
 
