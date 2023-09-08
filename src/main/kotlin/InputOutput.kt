@@ -79,9 +79,10 @@ fun defaultCaptureOutputControlInput(stdin: List<String> = listOf(), run: () -> 
         @Suppress("TooGenericExceptionCaught")
         val result: Pair<Any?, Throwable?> = try {
             Pair(run(), null)
-        } catch (e: ThreadDeath) {
-            throw e
         } catch (e: Throwable) {
+            if (e is OutOfMemoryError || e is ThreadDeath) {
+                throw e
+            }
             Pair(null, e)
         }
 
