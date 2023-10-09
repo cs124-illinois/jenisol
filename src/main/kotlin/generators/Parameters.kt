@@ -543,18 +543,15 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
     }
 
     val needsParameterGenerator = fixedParameters == null || randomParameters == null
-    fun generate(
-        parametersGenerator: ParametersGeneratorGenerator?,
-        random: Random = Random,
-        cloner: Cloner,
-    ) = ConfiguredParametersGenerator(
-        parametersGenerator,
-        random,
-        cloner,
-        fixedParameters,
-        randomParameters,
-        notNullParameters,
-    )
+    fun generate(parametersGenerator: ParametersGeneratorGenerator?, random: Random = Random, cloner: Cloner) =
+        ConfiguredParametersGenerator(
+            parametersGenerator,
+            random,
+            cloner,
+            fixedParameters,
+            randomParameters,
+            notNullParameters,
+        )
 }
 
 @Suppress("LongParameterList")

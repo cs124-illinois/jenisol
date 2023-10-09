@@ -126,11 +126,10 @@ class Comparators(
                 submission: Any,
                 solutionClass: Class<*>?,
                 submissionClass: Class<*>?,
-            ): Boolean =
-                when {
-                    solution is Double && submission is Double -> compareDoubles(solution, submission)
-                    else -> false
-                }
+            ): Boolean = when {
+                solution is Double && submission is Double -> compareDoubles(solution, submission)
+                else -> false
+            }
         }
         comparators[java.lang.Double::class.java] = object : Comparator {
             override val descendants = false
@@ -141,11 +140,10 @@ class Comparators(
                 submission: Any,
                 solutionClass: Class<*>?,
                 submissionClass: Class<*>?,
-            ): Boolean =
-                when {
-                    solution is Double && submission is Double -> compareDoubles(solution, submission)
-                    else -> false
-                }
+            ): Boolean = when {
+                solution is Double && submission is Double -> compareDoubles(solution, submission)
+                else -> false
+            }
         }
         comparators[java.util.Iterator::class.java] = object : Comparator {
             override val descendants = false
@@ -156,15 +154,14 @@ class Comparators(
                 submission: Any,
                 solutionClass: Class<*>?,
                 submissionClass: Class<*>?,
-            ): Boolean =
-                when {
-                    solution is Iterator<*> && submission is Iterator<*> -> {
-                        val solutionList = solution.asSequence().take(DEFAULT_ITERABLE_LENGTH).toList()
-                        val submissionList = submission.asSequence().take(DEFAULT_ITERABLE_LENGTH).toList()
-                        solutionList == submissionList
-                    }
-                    else -> false
+            ): Boolean = when {
+                solution is Iterator<*> && submission is Iterator<*> -> {
+                    val solutionList = solution.asSequence().take(DEFAULT_ITERABLE_LENGTH).toList()
+                    val submissionList = submission.asSequence().take(DEFAULT_ITERABLE_LENGTH).toList()
+                    solutionList == submissionList
                 }
+                else -> false
+            }
         }
         comparators[java.util.stream.Stream::class.java] = object : Comparator {
             override val descendants = false
@@ -175,15 +172,14 @@ class Comparators(
                 submission: Any,
                 solutionClass: Class<*>?,
                 submissionClass: Class<*>?,
-            ): Boolean =
-                when {
-                    solution is Stream<*> && submission is Stream<*> -> {
-                        val solutionList = solution.limit(DEFAULT_ITERABLE_LENGTH.toLong()).toList()
-                        val submissionList = submission.limit(DEFAULT_ITERABLE_LENGTH.toLong()).toList()
-                        solutionList == submissionList
-                    }
-                    else -> false
+            ): Boolean = when {
+                solution is Stream<*> && submission is Stream<*> -> {
+                    val solutionList = solution.limit(DEFAULT_ITERABLE_LENGTH.toLong()).toList()
+                    val submissionList = submission.limit(DEFAULT_ITERABLE_LENGTH.toLong()).toList()
+                    solutionList == submissionList
                 }
+                else -> false
+            }
         }
     }
 

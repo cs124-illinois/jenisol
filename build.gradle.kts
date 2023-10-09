@@ -4,18 +4,18 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.github.cs124-illinois"
-version = "2023.9.1"
+version = "2023.10.0"
 
 plugins {
     kotlin("jvm") version "1.9.10"
     java
     `maven-publish`
 
-    id("org.jmailen.kotlinter") version "3.16.0"
+    id("org.jmailen.kotlinter") version "4.0.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
 
-    id("com.github.ben-manes.versions") version "0.48.0"
+    id("com.github.ben-manes.versions") version "0.49.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.1"
 }
 repositories {
@@ -56,7 +56,9 @@ tasks.dependencyUpdates {
         listOf("RELEASE", "FINAL", "GA").any { uppercase().contains(it) }
             || "^[0-9,.v-]+(-r)?$".toRegex().matches(this)
         )
-    rejectVersionIf { candidate.version.isNonStable() }
+    rejectVersionIf {
+        candidate.version.isNonStable()
+    }
     gradleReleaseChannel = "current"
 }
 detekt {

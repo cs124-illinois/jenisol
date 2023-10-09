@@ -412,19 +412,18 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         threw: Throwable? = null,
         timeout: Boolean = false,
         finishedReceivers: Boolean = true,
-    ) =
-        TestResults(
-            map { it.testResults as List<TestResult<Any, ParameterGroup>> }.flatten().sortedBy { it.stepCount },
-            settings,
-            completed,
-            threw,
-            timeout,
-            finishedReceivers,
-            count { !it.tested },
-            skippedSteps = map { it.skippedTests }.flatten().sorted(),
-            randomTrace = recordingRandom.finish(),
-            // randomCallers = recordingRandom.callers
-        )
+    ) = TestResults(
+        map { it.testResults as List<TestResult<Any, ParameterGroup>> }.flatten().sortedBy { it.stepCount },
+        settings,
+        completed,
+        threw,
+        timeout,
+        finishedReceivers,
+        count { !it.tested },
+        skippedSteps = map { it.skippedTests }.flatten().sorted(),
+        randomTrace = recordingRandom.finish(),
+        // randomCallers = recordingRandom.callers
+    )
 
     inner class ExecutablePicker(private val random: Random, private val methods: Set<Executable>) {
         private val counts: MutableMap<Executable, Int> = methods.filter {

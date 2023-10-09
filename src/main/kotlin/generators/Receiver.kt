@@ -31,12 +31,11 @@ class ReceiverGenerator(
     override val edge: Set<Value<Any?>>
         get() = mutableSetOf(Value(null, null, null, null, null, ZeroComplexity))
 
-    override fun random(complexity: Complexity, runner: TestRunner?): Value<Any> =
-        if (random.nextBoolean()) {
-            simple.shuffled(random).first()
-        } else {
-            receivers.findWithComplexity(complexity, random)
-        }
+    override fun random(complexity: Complexity, runner: TestRunner?): Value<Any> = if (random.nextBoolean()) {
+        simple.shuffled(random).first()
+    } else {
+        receivers.findWithComplexity(complexity, random)
+    }
 }
 
 val UnconfiguredReceiverGenerator = object : TypeGenerator<Any> {

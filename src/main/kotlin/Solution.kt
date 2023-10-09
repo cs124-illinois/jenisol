@@ -321,8 +321,7 @@ class Solution(val solution: Class<*>) {
             submission: Any,
             solutionClass: Class<*>?,
             submissionClass: Class<*>?,
-        ): Boolean =
-            true
+        ): Boolean = true
     }
 
     init {
@@ -578,12 +577,7 @@ fun Class<*>.findMethod(method: Method, solution: Class<*>) = this.declaredMetho
     null
 }
 
-fun compareReturn(
-    solutionReturn: Type,
-    solution: Class<*>,
-    submissionReturn: Type,
-    submission: Class<*>,
-) = when {
+fun compareReturn(solutionReturn: Type, solution: Class<*>, submissionReturn: Type, submission: Class<*>) = when {
     solutionReturn == submissionReturn -> true
     solutionReturn == solution && submissionReturn == submission -> true
     solutionReturn is Class<*> && submissionReturn is Class<*> && solutionReturn.isArray &&

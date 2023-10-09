@@ -766,19 +766,18 @@ class ObjectGenerator(
     }
 }
 
-fun <T> Collection<T>.values(complexity: Complexity, cloner: Cloner) =
-    toSet().also {
-        check(size == it.size) { "Collection of values was not distinct" }
-    }.map {
-        Value(
-            cloner.deepClone(it),
-            cloner.deepClone(it),
-            cloner.deepClone(it),
-            cloner.deepClone(it),
-            cloner.deepClone(it),
-            complexity,
-        )
-    }.toSet()
+fun <T> Collection<T>.values(complexity: Complexity, cloner: Cloner) = toSet().also {
+    check(size == it.size) { "Collection of values was not distinct" }
+}.map {
+    Value(
+        cloner.deepClone(it),
+        cloner.deepClone(it),
+        cloner.deepClone(it),
+        cloner.deepClone(it),
+        cloner.deepClone(it),
+        complexity,
+    )
+}.toSet()
 
 inline fun <reified T> T.value(complexity: Complexity, cloner: Cloner) =
     Value(deepCopy(cloner), deepCopy(cloner), deepCopy(cloner), deepCopy(cloner), deepCopy(cloner), complexity)

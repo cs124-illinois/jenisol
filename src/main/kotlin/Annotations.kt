@@ -628,12 +628,11 @@ fun List<*>.deepCompare(other: List<*>) = if (size != other.size) {
 }
 
 @Suppress("ReturnCount")
-fun Type.parameterGroupMatches(parameters: Array<Type>) =
-    if (this == None::class.java && parameters.isEmpty()) {
-        true
-    } else {
-        (this as ParameterizedType).actualTypeArguments.compareBoxed(parameters)
-    }
+fun Type.parameterGroupMatches(parameters: Array<Type>) = if (this == None::class.java && parameters.isEmpty()) {
+    true
+} else {
+    (this as ParameterizedType).actualTypeArguments.compareBoxed(parameters)
+}
 
 // Borrowed from Kotlin core
 
@@ -647,10 +646,7 @@ internal fun <T> Array<out T>?.safeContentDeepToString(): String {
 }
 
 @Suppress("ComplexMethod")
-private fun <T> Array<out T>.safeContentDeepToStringInternal(
-    result: StringBuilder,
-    processed: MutableList<Array<*>>,
-) {
+private fun <T> Array<out T>.safeContentDeepToStringInternal(result: StringBuilder, processed: MutableList<Array<*>>) {
     if (this in processed) {
         result.append("[...]")
         return

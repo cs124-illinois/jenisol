@@ -116,7 +116,14 @@ data class TestResult<T, P : ParameterGroup>(
 
     enum class Type { CONSTRUCTOR, INITIALIZER, METHOD, STATIC_METHOD, FACTORY_METHOD, COPY_CONSTRUCTOR }
     enum class Differs {
-        STDOUT, STDERR, INTERLEAVED_OUTPUT, RETURN, THREW, PARAMETERS, VERIFIER_THREW, INSTANCE_VALIDATION_THREW
+        STDOUT,
+        STDERR,
+        INTERLEAVED_OUTPUT,
+        RETURN,
+        THREW,
+        PARAMETERS,
+        VERIFIER_THREW,
+        INSTANCE_VALIDATION_THREW,
     }
 
     val succeeded: Boolean
