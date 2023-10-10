@@ -1,6 +1,6 @@
 package examples.java.receiver.arrayfactory;
 
-public class BadReceivers0 {
+public final class BadReceivers0 {
   private int value;
 
   private BadReceivers0(int setValue) {

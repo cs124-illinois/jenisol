@@ -1,7 +1,6 @@
 package examples.java.noreceiver.factoryconstructor;
 
-@SuppressWarnings({"unused", "FinalClass", "FieldCanBeLocal"})
-public class Incorrect0 {
+public final class Incorrect0 {
   private final int value;
 
   private Incorrect0(int setValue) {

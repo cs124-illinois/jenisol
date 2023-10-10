@@ -1,6 +1,6 @@
 package examples.java.receiver.arrayfactory;
 
-public class Incorrect1 {
+public final class Incorrect1 {
   private int value;
 
   private Incorrect1(int setValue) {

@@ -6,6 +6,7 @@ import edu.illinois.cs.cs125.jenisol.core.Verify;
 
 @SuppressWarnings({"unused", "ParameterCanBeLocal"})
 public class Correct {
+  @SuppressWarnings("checkstyle:ParameterAssignment")
   public static int both(int[] values) {
     values = new int[] {0};
     return values.length;

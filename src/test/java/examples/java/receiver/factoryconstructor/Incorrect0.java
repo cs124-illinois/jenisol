@@ -1,6 +1,6 @@
 package examples.java.receiver.factoryconstructor;
 
-public class Incorrect0 {
+public final class Incorrect0 {
   private int value;
 
   private Incorrect0(int setValue) {
