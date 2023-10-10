@@ -45,7 +45,7 @@ class Solution(val solution: Class<*>) {
                 checkDesign(it.isNotEmpty() || allFields.isNotEmpty()) { "Found no methods or fields to test" }
             }
 
-    val allExecutablesWithPrivate = (solution.declaredMethods.toSet() + solution.declaredConstructors.toSet())
+    private val allExecutablesWithPrivate = (solution.declaredMethods.toSet() + solution.declaredConstructors.toSet())
         .filterNotNull()
         .filter {
             ((!it.isJenisol() || it.isCheckDesign())) &&
@@ -450,6 +450,9 @@ fun String.toKotlinType() = when {
 
     else -> this
 }
+    .replace("java.util.List", "List")
+    .replace("java.util.Map", "Map")
+    .replace("java.util.Set", "Set")
 
 @Suppress("CyclomaticComplexMethod")
 fun Executable.fullName(isKotlin: Boolean = false): String {
@@ -484,7 +487,7 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
             } else {
                 ""
             }
-        }$returnType$name(${parameters.joinToString(", ") { it.type.cleanCanonicalName() }})"
+        }$returnType$name(${parameters.joinToString(", ") { it.parameterizedType.cleanTypeName() }})"
     } else {
         "${visibilityModifier ?: ""}${
             if (!isConstructor) {
@@ -494,7 +497,7 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
             }
         }$name(${
             parameters.joinToString(", ") {
-                it.type.cleanCanonicalName().toKotlinType()
+                it.parameterizedType.cleanTypeName().toKotlinType()
             }
         })${
             if (!isConstructor) {
@@ -506,13 +509,11 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
     }
 }
 
-fun Class<*>.cleanCanonicalName() = canonicalName?.removePrefix("java.lang.") ?: "Unknown"
-
-fun Type.cleanTypeName(): String = typeName.removePrefix("java.lang.")
+fun Type.cleanTypeName(): String = typeName.replace("java.lang.", "")
 
 fun Field.fullName(): String {
     val visibilityModifier = getVisibilityModifier()?.plus(" ")
-    return "${visibilityModifier ?: ""}${type.cleanCanonicalName()} $name"
+    return "${visibilityModifier ?: ""}${type.canonicalName?.removePrefix("java.lang.") ?: "Unknown"} $name"
 }
 
 fun Class<*>.visibilityMatches(klass: Class<*>) = when {

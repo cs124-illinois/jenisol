@@ -122,33 +122,16 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 @Suppress("ComplexCondition")
                 if (isKotlin &&
                     solutionExecutable is Method &&
-                    (
-                        solutionExecutable.name.startsWith("get") ||
-                            solutionExecutable.name.startsWith("set")
-                        )
+                    (solutionExecutable.looksLikeGetter() || solutionExecutable.looksLikeSetter())
                 ) {
-                    if (solutionExecutable.name.startsWith("get")) {
-                        val field = solutionExecutable.name.removePrefix("get").let {
-                            it[0].lowercaseChar() + it.substring(1)
-                        }
-                        throw SubmissionDesignKotlinNotAccessibleError(
-                            submission,
-                            field,
-                        )
+                    val field = solutionExecutable.getterOrSetterToPropertyName()
+                    if (solutionExecutable.looksLikeGetter()) {
+                        throw SubmissionDesignKotlinNotAccessibleError(submission, field)
                     } else {
-                        val field = solutionExecutable.name.removePrefix("set").let {
-                            it[0].lowercaseChar() + it.substring(1)
-                        }
-                        throw SubmissionDesignKotlinNotModifiableError(
-                            submission,
-                            field,
-                        )
+                        throw SubmissionDesignKotlinNotModifiableError(submission, field)
                     }
                 } else {
-                    throw SubmissionDesignMissingMethodError(
-                        submission,
-                        solutionExecutable,
-                    )
+                    throw SubmissionDesignMissingMethodError(submission, solutionExecutable)
                 }
             }
         }.toMutableMap().also {
@@ -168,23 +151,12 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 @Suppress("MagicNumber")
                 executableMap.keys
                     .filterIsInstance<Method>()
-                    .filter { it.name.length > 3 && (it.name.startsWith("get") || it.name.startsWith("set")) }
-                    .filter {
-                        // Check standard getter and setter syntax
-                        if (it.name.startsWith("get")) {
-                            it.parameters.isEmpty() && it.returnType.name != "void"
-                        } else {
-                            it.parameters.size == 1 && it.returnType.name == "void"
-                        }
-                    }
+                    .filter { it.looksLikeGetter() || it.looksLikeSetter() }
                     .firstOrNull { method -> submission.kotlin.memberFunctions.map { it.name }.contains(method.name) }
                     ?.also { method ->
-                        val name = method.name
-                        val field = name.removePrefix("set").removePrefix("get").let {
-                            it[0].lowercase() + it.substring(1)
-                        }
+                        val field = method.getterOrSetterToPropertyName()
                         if (!method.hasKotlinMirrorOK()) {
-                            throw KotlinBadSetterOrGetter(field, name)
+                            throw KotlinBadSetterOrGetter(field, method.name)
                         }
                     }
             }
@@ -197,8 +169,8 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             }.forEach { executable ->
                 if (executable !in submissionExecutables.values) {
                     if (isKotlin) {
-                        @Suppress("MagicNumber")
-                        if (executable is Method && executable.name.startsWith("get") && executable.name.length > 3) {
+                        // HACK to work around Kotlin's lack of setter-only syntax
+                        if (executable is Method && executable.looksLikeGetter()) {
                             val setterName = executable.name.replace("get", "set")
                             if (submissionExecutables.values.map { it.name }.contains(setterName)) {
                                 return@forEach
@@ -228,25 +200,19 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                         }
                     }
                     @Suppress("ComplexCondition", "MagicNumber")
-                    if (isKotlin && executable is Method &&
-                        executable.name.length > 3 &&
-                        (executable.name.startsWith("set") || executable.name.startsWith("get"))
+                    if (isKotlin &&
+                        executable is Method &&
+                        (executable.looksLikeGetter() || executable.looksLikeSetter())
                     ) {
-                        if (executable.name.startsWith("set")) {
-                            val field = executable.name.removePrefix("set").let {
-                                it[0].lowercaseChar() + it.substring(1)
-                            }
+                        if (executable.looksLikeSetter()) {
                             throw SubmissionDesignKotlinIsModifiableError(
                                 submission,
-                                field,
+                                executable.getterOrSetterToPropertyName(),
                             )
                         } else {
-                            val field = executable.name.removePrefix("get").let {
-                                it[0].lowercaseChar() + it.substring(1)
-                            }
                             throw SubmissionDesignKotlinIsAccessibleError(
                                 submission,
-                                field,
+                                executable.getterOrSetterToPropertyName(),
                             )
                         }
                     }
@@ -815,3 +781,16 @@ fun unwrap(run: () -> Any?): Any? = try {
 fun Class<*>.isKotlin() = getAnnotation(Metadata::class.java) != null
 
 class FollowTraceException(index: Int) : RuntimeException("Random generator out of sync at index $index")
+
+@Suppress("MagicNumber")
+fun Executable.looksLikeGetter() =
+    this is Method && name.length > 3 && name.startsWith("get") && parameters.isEmpty() && returnType.name != "void"
+
+@Suppress("MagicNumber")
+fun Executable.looksLikeSetter() =
+    this is Method && name.length > 3 && name.startsWith("set") && parameters.size == 1 && returnType.name == "void"
+
+fun Method.getterOrSetterToPropertyName() = name
+    .removePrefix("set")
+    .removePrefix("get")
+    .let { it[0].lowercase() + it.substring(1) }
