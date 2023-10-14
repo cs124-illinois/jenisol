@@ -36,9 +36,11 @@ class Comparators(
                     solution::class.java == submission::class.java -> true
                     solutionClass != null && submissionClass != null &&
                         solution is AssertionError &&
-                        submission is IllegalArgumentException &&
-                        !solutionClass.isKotlin() &&
-                        submissionClass.isKotlin() -> true
+                        submission is IllegalArgumentException -> true
+
+                    solutionClass != null && submissionClass != null &&
+                        solution is IllegalArgumentException &&
+                        submission is AssertionError -> true
 
                     solutionClass != null && submissionClass != null &&
                         (solution is AssertionError || solution is IllegalArgumentException) &&
@@ -51,12 +53,6 @@ class Comparators(
                         solution is NullPointerException &&
                         solution.message?.startsWith("Parameter specified as non-null is null") == true &&
                         (submission is AssertionError || submission is IllegalArgumentException) &&
-                        solutionClass.isKotlin() &&
-                        !submissionClass.isKotlin() -> true
-
-                    solutionClass != null && submissionClass != null &&
-                        solution is IllegalArgumentException &&
-                        submission is AssertionError &&
                         solutionClass.isKotlin() &&
                         !submissionClass.isKotlin() -> true
 
@@ -160,6 +156,7 @@ class Comparators(
                     val submissionList = submission.asSequence().take(DEFAULT_ITERABLE_LENGTH).toList()
                     solutionList == submissionList
                 }
+
                 else -> false
             }
         }
@@ -178,6 +175,7 @@ class Comparators(
                     val submissionList = submission.limit(DEFAULT_ITERABLE_LENGTH.toLong()).toList()
                     solutionList == submissionList
                 }
+
                 else -> false
             }
         }
@@ -239,6 +237,7 @@ fun Any.deepEquals(
         solutionClass,
         submissionClass,
     )
+
     this is ParameterGroup && submission is ParameterGroup ->
         this.toArray().deepEquals(submission.toArray(), comparators, solutionClass, submissionClass)
 
