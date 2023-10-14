@@ -24,7 +24,7 @@ repositories {
 }
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.10")
-    implementation("io.github.classgraph:classgraph:4.8.162")
+    implementation("io.github.classgraph:classgraph:4.8.163")
     implementation("io.github.kostaskougios:cloning:master-SNAPSHOT")
 
     testImplementation("io.kotest:kotest-runner-junit5:5.7.2")
