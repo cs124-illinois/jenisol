@@ -3,20 +3,20 @@ import java.io.StringWriter
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-group = "com.github.cs124-illinois"
-version = "2023.11.0"
+group = "org.cs124"
+version = "2023.11.1"
 
 plugins {
     kotlin("jvm") version "1.9.20"
     java
     `maven-publish`
-
+    signing
     id("org.jmailen.kotlinter") version "4.0.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
-
     id("com.github.ben-manes.versions") version "0.49.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.3"
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 repositories {
     mavenCentral()
@@ -93,27 +93,52 @@ task("createProperties") {
             }
     }
 }
-tasks {
-    val sourcesJar by creating(Jar::class) {
-        archiveClassifier.set("sources")
-        from(sourceSets["main"].allSource)
-    }
-    artifacts {
-        add("archives", sourcesJar)
-    }
-}
 java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+    withJavadocJar()
     withSourcesJar()
 }
 publishing {
     publications {
         create<MavenPublication>("jenisol") {
             from(components["java"])
+
+            pom {
+                name = "jenisol"
+                description = "Solution-driven autograding for CS 124."
+                url = "https://cs124.org"
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "https://opensource.org/license/mit/"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "gchallen"
+                        name = "Geoffrey Challen"
+                        email = "challen@illinois.edu"
+                    }
+                }
+                scm {
+                    connection = "scm:git:https://github.com/cs124-illinois/jenisol.git"
+                    developerConnection = "scm:git:https://github.com/cs124-illinois/jenisol.git"
+                    url = "https://github.com/cs124-illinois/jenisol"
+                }
+            }
         }
     }
 }
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
     }
+}
+signing {
+    sign(publishing.publications["jenisol"])
 }
