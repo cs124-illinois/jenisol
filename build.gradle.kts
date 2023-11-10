@@ -4,10 +4,10 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.github.cs124-illinois"
-version = "2023.10.2"
+version = "2023.11.0"
 
 plugins {
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
     java
     `maven-publish`
 
@@ -16,18 +16,18 @@ plugins {
     id("com.github.sherter.google-java-format") version "0.9"
 
     id("com.github.ben-manes.versions") version "0.49.0"
-    id("io.gitlab.arturbosch.detekt") version "1.23.1"
+    id("io.gitlab.arturbosch.detekt") version "1.23.3"
 }
 repositories {
     mavenCentral()
     maven(url = "https://jitpack.io")
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.10")
-    implementation("io.github.classgraph:classgraph:4.8.163")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
+    implementation("io.github.classgraph:classgraph:4.8.164")
     implementation("io.github.kostaskougios:cloning:master-SNAPSHOT")
 
-    testImplementation("io.kotest:kotest-runner-junit5:5.7.2")
+    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
     testImplementation("org.slf4j:slf4j-simple:2.0.9")
 }
 tasks.withType<JavaCompile> {

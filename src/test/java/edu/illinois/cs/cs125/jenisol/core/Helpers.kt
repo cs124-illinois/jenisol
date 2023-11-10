@@ -249,7 +249,6 @@ suspend fun Class<*>.test(overrideMaxCount: Int = 0) = this.testingClasses().app
                         try {
                             submission(incorrect)
                         } catch (e: Exception) {
-                            // println(e)
                             throw e
                         }
                     }

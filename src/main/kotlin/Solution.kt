@@ -424,6 +424,7 @@ fun String.toKotlinType() = when {
     this == "double" -> "Double"
     this == "char" -> "Char"
     this == "boolean" -> "Boolean"
+    this == "Integer" -> "Int"
     this.endsWith("[]") -> {
         var currentType = this
         var arrayCount = -1
@@ -461,7 +462,7 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
 
     val returnType = when (this) {
         is Constructor<*> -> ""
-        is Method -> genericReturnType.cleanTypeName()
+        is Method -> genericReturnType.cleanTypeName(isKotlin)
         else -> error("Unknown executable type")
     }.let { type ->
         if (isKotlin) {
@@ -487,7 +488,7 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
             } else {
                 ""
             }
-        }$returnType$name(${parameters.joinToString(", ") { it.parameterizedType.cleanTypeName() }})"
+        }$returnType$name(${parameters.joinToString(", ") { it.parameterizedType.cleanTypeName(isKotlin) }})"
     } else {
         "${visibilityModifier ?: ""}${
             if (!isConstructor) {
@@ -497,7 +498,7 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
             }
         }$name(${
             parameters.joinToString(", ") {
-                it.parameterizedType.cleanTypeName().toKotlinType()
+                it.parameterizedType.cleanTypeName(isKotlin).toKotlinType()
             }
         })${
             if (!isConstructor) {
@@ -509,7 +510,21 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
     }
 }
 
-fun Type.cleanTypeName(): String = typeName.replace("java.lang.", "")
+fun Type.cleanTypeName(isKotlin: Boolean = false): String {
+    if (this is ParameterizedType) {
+        return "${rawType.typeName}<${
+            actualTypeArguments.map { it.typeName.replace("java.lang.", "") }.joinToString(", ") {
+                if (isKotlin) {
+                    it.toKotlinType()
+                } else {
+                    it
+                }
+            }
+        }>"
+    } else {
+        return typeName.replace("java.lang.", "")
+    }
+}
 
 fun Field.fullName(): String {
     val visibilityModifier = getVisibilityModifier()?.plus(" ")
