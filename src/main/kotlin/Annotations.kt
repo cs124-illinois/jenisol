@@ -343,11 +343,12 @@ annotation class ProvideSystemIn
 
 fun Executable.provideSystemIn() = isAnnotationPresent(ProvideSystemIn::class.java)
 
-@Target(AnnotationTarget.FUNCTION)
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class ProvideFileSystem
 
 fun Executable.provideFileSystem() = isAnnotationPresent(ProvideFileSystem::class.java)
+fun Class<*>.provideFileSystem() = isAnnotationPresent(ProvideFileSystem::class.java)
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)

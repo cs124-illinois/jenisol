@@ -134,7 +134,12 @@ class Solution(val solution: Class<*>) {
         solution.declaredConstructors.let { it.size == 1 && it.first().parameterCount == 0 }
 
     val usesSystemIn = methodsToTest.any { it.provideSystemIn() }
-    val usesFileSystem = methodsToTest.any { it.provideFileSystem() }
+    val usesFileSystem = methodsToTest.any { it.provideFileSystem() } || solution.provideFileSystem()
+    init {
+        check(!(solution.provideFileSystem() && methodsToTest.any { it.provideFileSystem() })) {
+            "Can't used @ProvideFileSystem annotation on both class and method"
+        }
+    }
 
     init {
         if (needsReceiver.isNotEmpty()) {

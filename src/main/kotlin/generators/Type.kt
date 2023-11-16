@@ -720,9 +720,15 @@ class SystemIn(input: List<String>) {
 internal fun systemInDummy(systemIn: SystemIn): Nothing = error("Should not be called")
 internal val systemInDummyExecutable = ::systemInDummy.javaMethod!!
 
-class JenisolFileSystem(val files: Map<String, ByteArray> = mapOf()) {
-    val asByteBuffers: Map<String, ByteBuffer>
-        get() = files.mapValues { ByteBuffer.wrap(it.value) }
+class JenisolFileSystem(val files: Map<String, ByteArray?> = mapOf()) {
+    val asByteBuffers: Map<String, ByteBuffer?>
+        get() = files.mapValues {
+            if (it.value != null) {
+                ByteBuffer.wrap(it.value)
+            } else {
+                null
+            }
+        }
 
     override fun equals(other: Any?) = when (other) {
         !is JenisolFileSystem -> false

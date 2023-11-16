@@ -355,6 +355,12 @@ class TestRunner(
     val systemInParameterGenerator = generators[systemInDummyExecutable]
     val fileSystemParameterGenerator = generators[fileSystemDummyExecutable]
 
+    val classFileSystemParameters = if (submission.solution.usesFileSystem) {
+        fileSystemParameterGenerator!!.generate(this)
+    } else {
+        null
+    }
+
     init {
         if (receivers == null && staticOnly) {
             receivers = if (!submission.submission.hasKotlinCompanion()) {
@@ -633,8 +639,18 @@ class TestRunner(
             submission.solution.solution,
         )
 
-        val systemInParameters = systemInParameterGenerator?.generate(this)
-        val fileSystemParameters = fileSystemParameterGenerator?.generate(this)
+        val systemInParameters = if (solutionExecutable.provideSystemIn()) {
+            systemInParameterGenerator!!.generate(this)
+        } else {
+            null
+        }
+        val fileSystemParameters = if (solutionExecutable.provideFileSystem()) {
+            fileSystemParameterGenerator!!.generate(this)
+        } else if (submission.solution.usesFileSystem) {
+            classFileSystemParameters
+        } else {
+            null
+        }
 
         // Have to run these together to keep things in sync
         val solutionResult = solutionExecutable.pairRun(

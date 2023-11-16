@@ -16,7 +16,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.writeBytes
 
 typealias CaptureOutputControlInput =
-    (stdin: List<String>, fileSystem: Map<String, ByteArray>, run: () -> Any?) -> CapturedResult
+    (stdin: List<String>, fileSystem: Map<String, ByteArray?>, run: () -> Any?) -> CapturedResult
 
 data class CapturedResult(
     val returned: Any?,
@@ -36,7 +36,7 @@ var filesystem = ThreadLocal<FileSystem>()
 
 fun defaultCaptureOutputControlInput(
     stdin: List<String> = listOf(),
-    fileSystem: Map<String, ByteArray> = mapOf(),
+    fileSystem: Map<String, ByteArray?> = mapOf(),
     run: () -> Any?,
 ): CapturedResult = outputLock.withLock {
     val ioBytes = mutableListOf<Byte>()
@@ -44,7 +44,7 @@ fun defaultCaptureOutputControlInput(
     val newFileSystem = Jimfs.newFileSystem(Configuration.unix()).also { jimfsFileSystem ->
         fileSystem.forEach { (filename, contents) ->
             jimfsFileSystem.getPath(filename).also { path ->
-                if (filename.endsWith("/")) {
+                if (contents == null) {
                     path.createDirectories()
                 } else {
                     path.parent.createDirectories()
