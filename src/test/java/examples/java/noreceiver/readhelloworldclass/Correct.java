@@ -7,8 +7,6 @@ import edu.illinois.cs.cs125.jenisol.core.RandomType;
 import edu.illinois.cs.cs125.jenisol.core.SimpleType;
 import edu.illinois.cs.cs125.jenisol.core.generators.JenisolFileSystem;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -30,16 +28,12 @@ public class Correct {
 
   @SimpleType
   private static final JenisolFileSystem[] SIMPLE =
-      new JenisolFileSystem[] {
-        new JenisolFileSystem(
-            Map.of("/testing.txt", "Hello, world!".getBytes(StandardCharsets.UTF_8)))
-      };
+      new JenisolFileSystem[] {new JenisolFileSystem("/testing.txt", "Hello, world!")};
 
   @EdgeType private static final JenisolFileSystem[] EDGE = new JenisolFileSystem[] {};
 
   @RandomType
   private static JenisolFileSystem randomInput(Random random) {
-    return new JenisolFileSystem(
-        Map.of("/testing.txt", ("" + random.nextInt()).getBytes(StandardCharsets.UTF_8)));
+    return new JenisolFileSystem("/testing.txt", ("" + random.nextInt()));
   }
 }

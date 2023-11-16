@@ -721,6 +721,8 @@ internal fun systemInDummy(systemIn: SystemIn): Nothing = error("Should not be c
 internal val systemInDummyExecutable = ::systemInDummy.javaMethod!!
 
 class JenisolFileSystem(val files: Map<String, ByteArray?> = mapOf()) {
+    constructor(filename: String, contents: String) : this(mapOf(filename to contents.toByteArray()))
+
     val asByteBuffers: Map<String, ByteBuffer?>
         get() = files.mapValues {
             if (it.value != null) {
