@@ -15,6 +15,7 @@ import java.lang.reflect.Array
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.nio.ByteBuffer
 import kotlin.math.pow
 import kotlin.random.Random
 import kotlin.reflect.jvm.javaMethod
@@ -718,6 +719,24 @@ class SystemIn(input: List<String>) {
 @Suppress("UNUSED_PARAMETER")
 internal fun systemInDummy(systemIn: SystemIn): Nothing = error("Should not be called")
 internal val systemInDummyExecutable = ::systemInDummy.javaMethod!!
+
+class JenisolFileSystem(val files: Map<String, ByteArray> = mapOf()) {
+    val asByteBuffers: Map<String, ByteBuffer>
+        get() = files.mapValues { ByteBuffer.wrap(it.value) }
+
+    override fun equals(other: Any?) = when (other) {
+        !is JenisolFileSystem -> false
+        else -> asByteBuffers == other.asByteBuffers
+    }
+
+    override fun hashCode(): Int {
+        return asByteBuffers.hashCode()
+    }
+}
+
+@Suppress("UNUSED_PARAMETER")
+internal fun fileSystemDummy(fileSystem: JenisolFileSystem): Nothing = error("Should not be called")
+internal val fileSystemDummyExecutable = ::fileSystemDummy.javaMethod!!
 
 data class JenisolAny(private val value: Int)
 

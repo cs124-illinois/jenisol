@@ -417,6 +417,9 @@ class TestJavaExamples : StringSpec(
         examples.java.noreceiver.kotlinparameterizeddesign.Correct::class.java.also {
             "${it.testName()}" { it.test() }
         }
+        examples.java.noreceiver.readhelloworld.Correct::class.java.also {
+            "${it.testName()}" { it.test() }
+        }
         // Tests that should fail
         examples.java.noreceiver.filternotnullwithrandomgeneratesnull.Correct::class.java.also {
             "${it.testName()}" {

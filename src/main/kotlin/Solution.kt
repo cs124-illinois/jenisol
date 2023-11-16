@@ -6,6 +6,7 @@ import com.rits.cloning.Cloner
 import edu.illinois.cs.cs125.jenisol.core.generators.GeneratorFactory
 import edu.illinois.cs.cs125.jenisol.core.generators.Parameters
 import edu.illinois.cs.cs125.jenisol.core.generators.boxType
+import edu.illinois.cs.cs125.jenisol.core.generators.fileSystemDummyExecutable
 import edu.illinois.cs.cs125.jenisol.core.generators.getArrayDimension
 import edu.illinois.cs.cs125.jenisol.core.generators.getArrayType
 import edu.illinois.cs.cs125.jenisol.core.generators.systemInDummyExecutable
@@ -133,6 +134,7 @@ class Solution(val solution: Class<*>) {
         solution.declaredConstructors.let { it.size == 1 && it.first().parameterCount == 0 }
 
     val usesSystemIn = methodsToTest.any { it.provideSystemIn() }
+    val usesFileSystem = methodsToTest.any { it.provideFileSystem() }
 
     init {
         if (needsReceiver.isNotEmpty()) {
@@ -175,6 +177,10 @@ class Solution(val solution: Class<*>) {
     private val initializers = initializer?.let { setOf(it) } ?: setOf()
     private val generatorExecutables = allExecutables + initializers + if (usesSystemIn) {
         setOf(systemInDummyExecutable)
+    } else {
+        setOf()
+    } + if (usesFileSystem) {
+        setOf(fileSystemDummyExecutable)
     } else {
         setOf()
     }

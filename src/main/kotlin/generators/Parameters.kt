@@ -194,6 +194,9 @@ class GeneratorFactory(private val executables: Set<Executable>, val solution: S
                 if (solution.usesSystemIn) {
                     types += SystemIn::class.java
                 }
+                if (solution.usesFileSystem) {
+                    types += JenisolFileSystem::class.java
+                }
             }.toSet()
         val arrayNeededTypes = neededTypes.filter { it.isArray }.map { it.getArrayType() }
 
@@ -357,8 +360,7 @@ class GeneratorFactory(private val executables: Set<Executable>, val solution: S
 
         if (solution.skipReceiver) {
             check(solutionClass !in neededTypes) {
-                "Incorrectly calculated whether we needed a receiver: " +
-                    "${solution.skipReceiver} v. ${solutionClass !in neededTypes}"
+                "Incorrectly calculated whether we needed a receiver: ${solutionClass !in neededTypes}"
             }
         }
 
@@ -420,6 +422,12 @@ class GeneratorFactory(private val executables: Set<Executable>, val solution: S
             require(SystemIn::class.java in typeGenerators) {
                 "Must provide complete type override for edu.illinois.cs.cs125.jenisol.core.generators.SystemIn " +
                     "when @ProvideSystemIn is used"
+            }
+        }
+        if (solution.usesFileSystem) {
+            require(JenisolFileSystem::class.java in typeGenerators) {
+                "Must provide complete type override for" +
+                    "edu.illinois.cs.cs125.jenisol.core.generators.JenisolFileSystem when @ProvideFileSystem is used"
             }
         }
     }

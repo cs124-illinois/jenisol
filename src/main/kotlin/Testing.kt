@@ -4,12 +4,14 @@ package edu.illinois.cs.cs125.jenisol.core
 
 import edu.illinois.cs.cs125.jenisol.core.generators.Complexity
 import edu.illinois.cs.cs125.jenisol.core.generators.Generators
+import edu.illinois.cs.cs125.jenisol.core.generators.JenisolFileSystem
 import edu.illinois.cs.cs125.jenisol.core.generators.ParameterValues
 import edu.illinois.cs.cs125.jenisol.core.generators.Parameters
 import edu.illinois.cs.cs125.jenisol.core.generators.SystemIn
 import edu.illinois.cs.cs125.jenisol.core.generators.Value
 import edu.illinois.cs.cs125.jenisol.core.generators.ZeroComplexity
 import edu.illinois.cs.cs125.jenisol.core.generators.boxType
+import edu.illinois.cs.cs125.jenisol.core.generators.fileSystemDummyExecutable
 import edu.illinois.cs.cs125.jenisol.core.generators.getArrayDimension
 import edu.illinois.cs.cs125.jenisol.core.generators.getArrayType
 import edu.illinois.cs.cs125.jenisol.core.generators.systemInDummyExecutable
@@ -351,6 +353,7 @@ class TestRunner(
     var tested: Boolean = false
 
     val systemInParameterGenerator = generators[systemInDummyExecutable]
+    val fileSystemParameterGenerator = generators[fileSystemDummyExecutable]
 
     init {
         if (receivers == null && staticOnly) {
@@ -391,6 +394,7 @@ class TestRunner(
         parameters: Array<Any?>,
         parametersCopy: Array<Any?>? = null,
         systemInParameters: SystemIn? = null,
+        fileSystemParameters: JenisolFileSystem? = null,
     ): Result<Any, ParameterGroup> {
         checkParameters(parameters)
         if (parametersCopy != null) {
@@ -398,8 +402,9 @@ class TestRunner(
         }
 
         val systemIn = systemInParameters?.input ?: listOf()
+        val fileSystem = fileSystemParameters?.files ?: mapOf()
 
-        return captureOutputControlInput(systemIn) {
+        return captureOutputControlInput(systemIn, fileSystem) {
             @Suppress("SpreadOperator")
             unwrap {
                 when (this@pairRun) {
@@ -629,6 +634,7 @@ class TestRunner(
         )
 
         val systemInParameters = systemInParameterGenerator?.generate(this)
+        val fileSystemParameters = fileSystemParameterGenerator?.generate(this)
 
         // Have to run these together to keep things in sync
         val solutionResult = solutionExecutable.pairRun(
@@ -636,11 +642,14 @@ class TestRunner(
             parameters.solution,
             parameters.solutionCopy,
             systemInParameters?.solution?.get(0) as SystemIn?,
+            fileSystemParameters?.solution?.get(0) as JenisolFileSystem?,
         )
+
         val solutionCopy = solutionExecutable.pairRun(
             stepReceivers.solutionCopy,
             parameters.solutionCopy,
             systemInParameters = systemInParameters?.solutionCopy?.get(0) as SystemIn?,
+            fileSystemParameters = fileSystemParameters?.solutionCopy?.get(0) as JenisolFileSystem?,
         )
 
         if (solutionResult.threw != null &&
@@ -673,11 +682,14 @@ class TestRunner(
             parameters.submission,
             parameters.submissionCopy,
             systemInParameters?.submission?.get(0) as SystemIn?,
+            fileSystemParameters?.submission?.get(0) as JenisolFileSystem?,
         )
+
         val submissionCopy = submissionExecutable.pairRun(
             stepReceivers.submissionCopy,
             parameters.submissionCopy,
             systemInParameters = systemInParameters?.submissionCopy?.get(0) as SystemIn?,
+            fileSystemParameters = fileSystemParameters?.submissionCopy?.get(0) as JenisolFileSystem?,
         )
 
         val linkedReceivers = linkReceivers(
@@ -715,6 +727,7 @@ class TestRunner(
             stepReceivers.unmodifiedCopy,
             parameters.unmodifiedCopy,
             systemInParameters = systemInParameters?.unmodifiedCopy?.get(0) as SystemIn?,
+            fileSystemParameters = fileSystemParameters?.unmodifiedCopy?.get(0) as JenisolFileSystem?,
         )
 
         val createdReceivers = extractReceivers(

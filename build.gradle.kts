@@ -4,14 +4,14 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2023.11.1"
+version = "2023.11.2"
 
 plugins {
     kotlin("jvm") version "1.9.20"
     java
     `maven-publish`
     signing
-    id("org.jmailen.kotlinter") version "4.0.0"
+    id("org.jmailen.kotlinter") version "4.1.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
     id("com.github.ben-manes.versions") version "0.49.0"
@@ -26,6 +26,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
     implementation("io.github.classgraph:classgraph:4.8.164")
     implementation("io.github.kostaskougios:cloning:master-SNAPSHOT")
+    implementation("com.google.jimfs:jimfs:1.3.0")
 
     testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
     testImplementation("org.slf4j:slf4j-simple:2.0.9")
