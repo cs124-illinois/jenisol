@@ -829,7 +829,6 @@ data class ParameterValues<T>(
 
 @Suppress("MagicNumber")
 fun <E> List<ParameterValues<E>>.unzip(): List<List<E>> {
-    @Suppress("RemoveExplicitTypeArguments")
     return fold(listOf(ArrayList<E>(), ArrayList<E>(), ArrayList<E>(), ArrayList<E>(), ArrayList<E>())) { r, i ->
         r[0].add(i.solution)
         r[1].add(i.submission)

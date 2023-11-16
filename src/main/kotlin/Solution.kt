@@ -499,7 +499,7 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
             } else {
                 ""
             }
-        }$returnType$name(${parameters.joinToString(", ") { it.parameterizedType.cleanTypeName(isKotlin) }})"
+        }$returnType$name(${parameters.joinToString(", ") { it.parameterizedType.cleanTypeName(false) }})"
     } else {
         "${visibilityModifier ?: ""}${
             if (!isConstructor) {
@@ -509,7 +509,7 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
             }
         }$name(${
             parameters.joinToString(", ") {
-                it.parameterizedType.cleanTypeName(isKotlin).toKotlinType()
+                it.parameterizedType.cleanTypeName(true).toKotlinType()
             }
         })${
             if (!isConstructor) {
@@ -522,8 +522,8 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
 }
 
 fun Type.cleanTypeName(isKotlin: Boolean = false): String {
-    if (this is ParameterizedType) {
-        return "${rawType.typeName}<${
+    return if (this is ParameterizedType) {
+        "${rawType.typeName}<${
             actualTypeArguments.map { it.typeName.replace("java.lang.", "") }.joinToString(", ") {
                 if (isKotlin) {
                     it.toKotlinType()
@@ -533,7 +533,7 @@ fun Type.cleanTypeName(isKotlin: Boolean = false): String {
             }
         }>"
     } else {
-        return typeName.replace("java.lang.", "")
+        typeName.replace("java.lang.", "")
     }
 }
 
