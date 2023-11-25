@@ -4,7 +4,7 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2023.11.2"
+version = "2023.11.3"
 
 plugins {
     kotlin("jvm") version "1.9.20"
@@ -18,14 +18,10 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.23.3"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
-repositories {
-    mavenCentral()
-    maven(url = "https://jitpack.io")
-}
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
     implementation("io.github.classgraph:classgraph:4.8.164")
-    implementation("io.github.kostaskougios:cloning:master-SNAPSHOT")
+    implementation("design.aem:cloning:1.11.1")
     implementation("com.google.jimfs:jimfs:1.3.0")
 
     testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
