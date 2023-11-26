@@ -135,6 +135,7 @@ class Solution(val solution: Class<*>) {
 
     val usesSystemIn = methodsToTest.any { it.provideSystemIn() }
     val usesFileSystem = methodsToTest.any { it.provideFileSystem() } || solution.provideFileSystem()
+
     init {
         check(!(solution.provideFileSystem() && methodsToTest.any { it.provideFileSystem() })) {
             "Can't used @ProvideFileSystem annotation on both class and method"
@@ -639,6 +640,9 @@ fun compareParameters(
                     submissionType.actualTypeArguments.all { it is Any }
                 }
 
+                solutionType is TypeVariable<*> && submissionType is TypeVariable<*> ->
+                    solutionType.bounds.contentEquals(submissionType.bounds)
+
                 submission.isKotlin() && solutionType is ParameterizedType && submissionType is ParameterizedType &&
                     solutionType.rawType == submissionType.rawType -> {
                     var matches = true
@@ -668,19 +672,16 @@ fun compareParameters(
         }
 }
 
-fun Class<*>.findConstructor(constructor: Constructor<*>, solution: Class<*>) = this.declaredConstructors.find {
-    it.isPublic() &&
-        it?.parameterTypes?.fixReceivers(this, solution)?.contentEquals(constructor.parameterTypes) ?: false
-}
+typealias SubmissionClass = Class<*>
+
+fun SubmissionClass.findConstructor(solutionConstructor: Constructor<*>, solution: Class<*>) = this.declaredConstructors
+    .filterNotNull()
+    .filter { it.isPublic() }
+    .find {
+        compareParameters(solutionConstructor.genericParameterTypes, solution, it.genericParameterTypes, this)
+    }
 
 fun Array<Type>.fixReceivers(from: Type, to: Type) = map {
-    when (it) {
-        from -> to
-        else -> it
-    }
-}.toTypedArray()
-
-fun Array<Class<*>>.fixReceivers(from: Class<*>, to: Class<*>) = map {
     when (it) {
         from -> to
         else -> it
