@@ -695,7 +695,13 @@ sealed class SubmissionDesignError(message: String) : RuntimeException(message)
 class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable) : SubmissionDesignError(
     "${klass.name} didn't provide ${
         if (executable is Method) {
-            "method"
+            """${
+                if (executable.isStatic()) {
+                    "class "
+                } else {
+                    ""
+                }
+            }method"""
         } else {
             "constructor"
         }
