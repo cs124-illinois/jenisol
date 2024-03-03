@@ -297,11 +297,11 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         }
         if ((strictOutput || solution.stderr.isNotBlank()) && solution.stderr != submission.stderr) {
             result.differs.add(TestResult.Differs.STDERR)
-            if (solution.stdout == submission.stdout + "\n") {
+            if (solution.stderr == submission.stderr + "\n") {
                 result.message =
                     "Error output is missing a newline, maybe use System.err.println instead of System.err.print?"
             }
-            if (solution.stdout + "\n" == submission.stdout) {
+            if (solution.stderr + "\n" == submission.stderr) {
                 result.message =
                     "Error output has an extra newline, maybe use System.err.print instead of System.err.println?"
             }
