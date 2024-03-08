@@ -10,16 +10,17 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="test" />
+          <option value=":test" />
           <option value="--tests" />
           <option value="&quot;edu.illinois.cs.cs125.jenisol.core.TestJavaExamples&quot;" />
         </list>
       </option>
-      <option name="vmOptions" value="" />
+      <option name="vmOptions" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
+    <RunAsTest>true</RunAsTest>
     <method v="2" />
   </configuration>
 </component>

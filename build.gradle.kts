@@ -4,10 +4,10 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2024.3.0"
+version = "2024.3.1"
 
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
     java
     `maven-publish`
     signing
@@ -19,8 +19,8 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
-    implementation("io.github.classgraph:classgraph:4.8.165")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.23")
+    implementation("io.github.classgraph:classgraph:4.8.168")
     implementation("design.aem:cloning:1.11.1")
     implementation("com.google.jimfs:jimfs:1.3.0")
 

@@ -398,6 +398,8 @@ fun Class<*>.isAbstract() = Modifier.isAbstract(modifiers)
 
 fun Class<*>.isFinal() = Modifier.isFinal(modifiers)
 
+fun Class<*>.isStatic() = Modifier.isStatic(modifiers)
+
 fun Class<*>.isPackagePrivate() = !isPublic() && !isPrivate() && !isProtected()
 
 fun Executable.isKotlinCompanionAccessor(): Boolean {

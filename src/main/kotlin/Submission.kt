@@ -21,70 +21,116 @@ import java.util.TreeMap
 import kotlin.random.Random
 import kotlin.reflect.full.memberFunctions
 
+@Suppress("LargeClass")
 class Submission(val solution: Solution, val submission: Class<*>) {
     private val isKotlin = submission.getAnnotation(Metadata::class.java) != null
 
-    init {
-        if (!solution.solution.visibilityMatches(submission)) {
+    @Suppress("LongMethod", "CyclomaticComplexMethod", "ThrowsCount")
+    private fun checkClassDesign(solution: Class<*>, submission: Class<*>, innerClass: Boolean = false) {
+        if (!solution.visibilityMatches(submission)) {
             throw SubmissionDesignClassError(
                 submission,
-                "is not ${solution.solution.getVisibilityModifier() ?: "package private"}",
+                "is not ${
+                    solution.getVisibilityModifier() ?: if (isKotlin) {
+                        "internal"
+                    } else {
+                        "package private"
+                    }
+                }",
+                innerClass,
             )
         }
-        if (!isKotlin && (solution.solution.isFinal() != submission.isFinal())) {
+        if (!isKotlin && (solution.isFinal() != submission.isFinal())) {
             throw SubmissionDesignClassError(
                 submission,
-                if (solution.solution.isFinal()) {
+                if (solution.isFinal()) {
                     "is not marked as final but should be"
                 } else {
                     "is marked as final but should not be"
                 },
+                innerClass,
             )
         }
-        if (solution.solution.isAbstract() != submission.isAbstract()) {
+        if (solution.isAbstract() != submission.isAbstract()) {
             throw SubmissionDesignClassError(
                 submission,
-                if (solution.solution.isAbstract()) {
+                if (solution.isAbstract()) {
                     "is not marked as abstract but should be"
                 } else {
                     "is marked as abstract but should not be"
                 },
+                innerClass,
             )
         }
-        if (solution.solution.superclass != null && solution.solution.superclass != submission.superclass) {
+        if (solution.isStatic() != submission.isStatic()) {
             throw SubmissionDesignClassError(
                 submission,
-                "does not extend ${solution.solution.superclass.name}",
+                if (solution.isStatic()) {
+                    "is not marked as static but should be"
+                } else {
+                    "is marked as static but should not be"
+                },
+                innerClass,
             )
         }
-        val solutionInterfaces = solution.solution.interfaces.toSet()
+        if (solution.superclass != null && solution.superclass != submission.superclass) {
+            throw SubmissionDesignClassError(
+                submission,
+                "does not extend ${solution.superclass.name}",
+                innerClass,
+            )
+        }
+        val solutionInterfaces = solution.interfaces.toSet()
         val submissionInterfaces = submission.interfaces.toSet()
         val missingInterfaces = solutionInterfaces.minus(submissionInterfaces)
         if (missingInterfaces.isNotEmpty()) {
             throw SubmissionDesignClassError(
                 submission,
                 "does not implement ${missingInterfaces.joinToString(separator = ", ") { it.name }}",
+                innerClass,
             )
         }
         val extraInterfaces = submissionInterfaces.minus(solutionInterfaces)
         if (extraInterfaces.isNotEmpty()) {
             throw SubmissionDesignClassError(
                 submission,
-                "does implements extra interfaces ${extraInterfaces.joinToString(separator = ", ") { it.name }}",
+                "implements extra interfaces ${extraInterfaces.joinToString(separator = ", ") { it.name }}",
+                innerClass,
             )
         }
-        solution.solution.typeParameters.forEachIndexed { i, type ->
+        solution.typeParameters.forEachIndexed { i, type ->
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             try {
                 if (!submission.typeParameters[i].bounds.contentEquals(type.bounds)) {
-                    throw SubmissionTypeParameterError(submission)
+                    throw SubmissionTypeParameterError(submission, innerClass)
                 }
             } catch (e: Exception) {
-                throw SubmissionTypeParameterError(submission)
+                throw SubmissionTypeParameterError(submission, innerClass)
             }
         }
-        if (submission.typeParameters.size > solution.solution.typeParameters.size) {
-            throw SubmissionTypeParameterError(submission)
+        if (submission.typeParameters.size > solution.typeParameters.size) {
+            throw SubmissionTypeParameterError(submission, innerClass)
+        }
+    }
+
+    init {
+        checkClassDesign(solution.solution, submission)
+        solution.solution.declaredClasses.filter { klass -> !klass.isPrivate() }.forEach { solutionInnerClass ->
+            val submissionInnerClass =
+                submission.declaredClasses.find { klass -> klass.simpleName == solutionInnerClass.simpleName }
+            if (submissionInnerClass == null) {
+                throw SubmissionDesignMissingInnerClassError(submission, solutionInnerClass)
+            }
+            checkClassDesign(solutionInnerClass, submissionInnerClass)
+        }
+        submission.declaredClasses.filter { klass -> !klass.isPrivate() }.forEach { submissionInnerClass ->
+            val solutionInnerClass = solution.solution.declaredClasses
+                .find { klass -> klass.simpleName == submissionInnerClass.simpleName }
+            if (solutionInnerClass == null) {
+                if (!(submission.isKotlin() && submissionInnerClass.kotlin.isCompanion)) {
+                    throw SubmissionDesignExtraInnerClassError(submission, submissionInnerClass)
+                }
+            }
         }
     }
 
@@ -106,6 +152,10 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 solutionField,
             )
         }.toSet()
+
+    private val hasInnerClasses = submission.declaredClasses.any { klass ->
+        !(submission.isKotlin() && klass.kotlin.isCompanion)
+    }
 
     val submissionExecutables = solution.allExecutables
         .filter {
@@ -131,7 +181,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                         throw SubmissionDesignKotlinNotModifiableError(submission, field)
                     }
                 } else {
-                    throw SubmissionDesignMissingMethodError(submission, solutionExecutable)
+                    throw SubmissionDesignMissingMethodError(submission, solutionExecutable, hasInnerClasses)
                 }
             }
         }.toMutableMap().also {
@@ -152,7 +202,9 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 executableMap.keys
                     .filterIsInstance<Method>()
                     .filter { it.looksLikeGetter() || it.looksLikeSetter() }
-                    .firstOrNull { method -> submission.kotlin.memberFunctions.map { it.name }.contains(method.name) }
+                    .firstOrNull { method ->
+                        submission.kotlin.memberFunctions.map { it.name }.contains(method.name)
+                    }
                     ?.also { method ->
                         val field = method.getterOrSetterToPropertyName()
                         if (!method.hasKotlinMirrorOK()) {
@@ -596,7 +648,8 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     )
                 }
 
-                val readyLeft = runners.filterIndexed { index, runner -> index > receiverIndex && runner.ready }.size
+                val readyLeft =
+                    runners.filterIndexed { index, runner -> index > receiverIndex && runner.ready }.size
 
                 val createReceiver = when {
                     currentRunner == null -> true
@@ -692,20 +745,31 @@ class Submission(val solution: Solution, val submission: Class<*>) {
 }
 
 sealed class SubmissionDesignError(message: String) : RuntimeException(message)
-class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable) : SubmissionDesignError(
-    "${klass.name} didn't provide ${
-        if (executable is Method) {
-            """${
-                if (executable.isStatic()) {
-                    "class "
-                } else {
-                    ""
-                }
-            }method"""
-        } else {
-            "constructor"
-        }
-    } ${executable.fullName(klass.isKotlin())}",
+class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable, hasInnerClasses: Boolean) :
+    SubmissionDesignError(
+        "${klass.name} didn't provide ${
+            if (executable is Method) {
+                """${
+                    if (executable.isStatic()) {
+                        "class "
+                    } else {
+                        ""
+                    }
+                }method"""
+            } else {
+                "constructor"
+            }
+        } ${executable.fullName(klass.isKotlin())}${
+            if (hasInnerClasses) {
+                "(submission defines inner classes)"
+            } else {
+                ""
+            }
+        }",
+    )
+
+class SubmissionDesignMissingInnerClassError(klass: Class<*>, innerClass: Class<*>) : SubmissionDesignError(
+    "${klass.name} didn't provide inner class ${innerClass.name}",
 )
 
 class SubmissionDesignKotlinNotAccessibleError(klass: Class<*>, field: String) : SubmissionDesignError(
@@ -740,12 +804,22 @@ class SubmissionDesignExtraMethodError(klass: Class<*>, executable: Executable) 
     } ${executable.fullName(klass.isKotlin())}",
 )
 
+class SubmissionDesignExtraInnerClassError(klass: Class<*>, innerKlass: Class<*>) : SubmissionDesignError(
+    "${klass.name} provided extra inner class ${innerKlass.name}",
+)
+
 class SubmissionDesignInheritanceError(klass: Class<*>, parent: Class<*>) : SubmissionDesignError(
     "${klass.name} didn't inherit from ${parent.name}",
 )
 
-class SubmissionTypeParameterError(klass: Class<*>) : SubmissionDesignError(
-    "${klass.name} has missing, unnecessary, or incorrectly-bounded type parameters",
+class SubmissionTypeParameterError(klass: Class<*>, innerClass: Boolean = false) : SubmissionDesignError(
+    "${
+        if (innerClass) {
+            "Inner class "
+        } else {
+            ""
+        }
+    }${klass.name} has missing, unnecessary, or incorrectly-bounded type parameters",
 )
 
 class SubmissionDesignMissingFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
@@ -765,9 +839,16 @@ class SubmissionStaticPublicFieldError(klass: Class<*>, field: Field) : Submissi
     "Static field ${field.fullName()} in ${klass.name} must be private",
 )
 
-class SubmissionDesignClassError(klass: Class<*>, message: String) : SubmissionDesignError(
-    "${klass.name} $message",
-)
+class SubmissionDesignClassError(klass: Class<*>, message: String, innerClass: Boolean = false) :
+    SubmissionDesignError(
+        "${
+            if (innerClass) {
+                "Inner class "
+            } else {
+                ""
+            }
+        }${klass.name} $message",
+    )
 
 class DesignOnlyTestingError(klass: Class<*>) : Exception(
     "Solution class ${klass.name} is marked as design only",

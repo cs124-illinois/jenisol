@@ -429,6 +429,12 @@ class TestJavaExamples : StringSpec(
         examples.java.receiver.moveablelocation.Correct::class.java.also {
             "${it.testName()}" { it.test() }
         }
+        examples.java.receiver.unnecessaryinnerclass.Correct::class.java.also {
+            "${it.testName()}" { it.test() }
+        }
+        examples.java.receiver.necessaryinnerclass.Correct::class.java.also {
+            "${it.testName()}" { it.test() }
+        }
         // Tests that should fail
         examples.java.noreceiver.filternotnullwithrandomgeneratesnull.Correct::class.java.also {
             "${it.testName()}" {
