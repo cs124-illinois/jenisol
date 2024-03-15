@@ -439,6 +439,7 @@ fun String.toKotlinType() = when {
     this == "char" -> "Char"
     this == "boolean" -> "Boolean"
     this == "Integer" -> "Int"
+    this == "Object" -> "Any"
     this.endsWith("[]") -> {
         var currentType = this
         var arrayCount = -1
