@@ -4,18 +4,18 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2024.3.2"
+version = "2024.3.3"
 
 plugins {
     kotlin("jvm") version "1.9.23"
     java
     `maven-publish`
     signing
-    id("org.jmailen.kotlinter") version "4.2.0"
+    id("org.jmailen.kotlinter") version "4.3.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
     id("com.github.ben-manes.versions") version "0.51.0"
-    id("io.gitlab.arturbosch.detekt") version "1.23.5"
+    id("io.gitlab.arturbosch.detekt") version "1.23.6"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 dependencies {
