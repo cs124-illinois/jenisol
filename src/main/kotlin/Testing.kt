@@ -136,7 +136,9 @@ data class TestResult<T, P : ParameterGroup>(
     var verifierThrew: Throwable? = null
 
     @Suppress("ComplexMethod", "LongMethod", "NestedBlockDepth")
-    fun explain(stacktrace: Boolean = false): String {
+    fun explain(stacktrace: Boolean = false, omitMethodName: Boolean = false): String {
+        check(failed) { "Can't explain successful result" }
+
         val resultString = when {
             verifierThrew != null -> "Verifier threw an exception: ${verifierThrew!!.message}"
             differs.contains(Differs.THREW) -> {
@@ -230,7 +232,13 @@ Submission modified its parameters to ${
 
             else -> error("Unexplained result")
         }
-        return "Testing $submissionMethodString failed:\n" +
+        return "Testing ${
+            if (omitMethodName) {
+                ""
+            } else {
+                "$submissionMethodString "
+            }
+        }failed:\n" +
             "$resultString${message?.let { "\nAdditional Explanation: $it" } ?: ""}"
     }
 
