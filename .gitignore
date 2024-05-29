@@ -40,3 +40,4 @@ test-output/
 .idea/**/compiler.xml
 
 .idea/google-java-format.xml
+.kotlin

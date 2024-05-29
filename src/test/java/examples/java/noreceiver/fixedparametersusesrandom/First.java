@@ -1,12 +1,11 @@
-package examples.java.noreceiver.fixedparametersusesrandom.first;
+package examples.java.noreceiver.fixedparametersusesrandom;
 
 import edu.illinois.cs.cs125.jenisol.core.FixedParameters;
 import edu.illinois.cs.cs125.jenisol.core.Limit;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class Correct {
+public class First {
   private static final Random RANDOM = new Random(124);
 
   @Limit(1)
@@ -14,5 +13,5 @@ public class Correct {
     return value + 1;
   }
 
-  @FixedParameters private static final List<Integer> FIXED = Arrays.asList(RANDOM.nextInt());
+  @FixedParameters private static final List<Integer> FIXED = List.of(RANDOM.nextInt());
 }

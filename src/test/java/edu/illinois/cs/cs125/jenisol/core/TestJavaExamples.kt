@@ -3,7 +3,6 @@ package edu.illinois.cs.cs125.jenisol.core
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.string.shouldContain
-import java.lang.IllegalStateException
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -120,8 +119,8 @@ class TestJavaExamples : StringSpec(
         examples.java.receiver.publicfield.Correct::class.java.also {
             "${it.testName()}" { it.test() }
         }
-        examples.java.designonly.fieldchecks.Correct::class.java.also {
-            "${it.testName()}" { it.test() }
+        examples.java.designonly.Correct::class.java.also {
+            "${it.testName()}" { examples.java.designonly.Correct::class.java.test() }
         }
         examples.java.noreceiver.doublecomparison.Correct::class.java.also {
             "${it.testName()}" { it.test() }
@@ -448,20 +447,21 @@ class TestJavaExamples : StringSpec(
                 }
             }
         }
-        examples.java.noreceiver.fixedparametersusesrandom.first.Correct::class.java.also {
+
+        examples.java.noreceiver.fixedparametersusesrandom.First::class.java.also {
             "${it.testName()}" {
                 val firstSolution = Solution(it)
                 shouldThrow<IllegalStateException> {
                     firstSolution.checkFields(it)
                 }
 
-                val second = examples.java.noreceiver.fixedparametersusesrandom.second.Correct::class.java
+                val second = examples.java.noreceiver.fixedparametersusesrandom.Second::class.java
                 val exception = shouldThrow<IllegalStateException> {
                     firstSolution.checkFields(second)
                 }
                 exception.message shouldContain "Field FIXED"
 
-                val third = examples.java.noreceiver.fixedparametersusesrandom.third.Correct::class.java
+                val third = examples.java.noreceiver.fixedparametersusesrandom.Third::class.java
                 firstSolution.checkFields(third)
             }
         }

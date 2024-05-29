@@ -1,4 +1,4 @@
-package examples.java.designonly.fieldchecks;
+package examples.java.designonly;
 
 public class Design1 {
   @SuppressWarnings("checkstyle:VisibilityModifier")

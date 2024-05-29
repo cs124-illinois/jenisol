@@ -1,4 +1,4 @@
-package examples.java.designonly.fieldchecks;
+package examples.java.designonly;
 
 import edu.illinois.cs.cs125.jenisol.core.DesignOnly;
 

@@ -9,8 +9,6 @@ import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-fun Class<*>.isKotlinAnchor() = simpleName == "Correct" && declaredMethods.isEmpty()
-
 fun Class<*>.testName() = packageName.removePrefix("examples.")
 
 val testingStepsShouldNotContain = setOf(
@@ -55,15 +53,15 @@ suspend fun Submission.testWithTimeout(settings: Settings, followTrace: List<Int
 
 fun Class<*>.testingClasses(): TestingClasses {
     val testName = packageName.removePrefix("examples.")
-    val packageClasses = ClassGraph().acceptPackages(packageName).scan().allClasses.map { it.loadClass() }
-
-    val testingClasses = if (packageClasses.find { it.isKotlinAnchor() } != null) {
-        ClassGraph().acceptPackages(
-            packageName.split(".").dropLast(1).joinToString("."),
-        ).scan().allClasses.map { it.loadClass() }
+    val scanName = if (isKotlin() && packageName.endsWith(".correct")) {
+        packageName.removeSuffix(".correct")
     } else {
-        packageClasses
-    }.filter { !it.isInterface && (it.declaredMethods.isNotEmpty() || it.declaredFields.isNotEmpty()) }
+        packageName
+    }
+    val packageClasses = ClassGraph().acceptPackages(scanName).scan().allClasses.map { it.loadClass() }
+    val testingClasses = packageClasses.filter {
+        !it.isInterface && (it.declaredMethods.isNotEmpty() || it.declaredFields.isNotEmpty())
+    }
 
     val primarySolution = testingClasses
         .find { it.simpleName == "Correct" || it.simpleName == "CorrectKt" }

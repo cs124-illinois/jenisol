@@ -1,13 +1,14 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.File
 import java.io.StringWriter
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2024.4.1"
+version = "2024.5.0"
 
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.0.0"
     java
     `maven-publish`
     signing
@@ -19,20 +20,21 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.23")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
     implementation("io.github.classgraph:classgraph:4.8.172")
     implementation("design.aem:cloning:1.11.1")
     implementation("com.google.jimfs:jimfs:1.3.0")
 
-    testImplementation("io.kotest:kotest-runner-junit5:5.8.1")
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.0")
     testImplementation("org.slf4j:slf4j-simple:2.0.13")
 }
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
 }
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
+        javaParameters = true
     }
 }
 tasks.withType<Test> {
@@ -65,15 +67,10 @@ tasks.check {
     dependsOn("detekt")
 }
 googleJavaFormat {
-    toolVersion = "1.15.0"
+    toolVersion = "1.22.0"
 }
 tasks.compileKotlin {
     dependsOn("createProperties")
-}
-tasks.compileTestKotlin {
-    kotlinOptions {
-        javaParameters = true
-    }
 }
 task("createProperties") {
     dependsOn(tasks.processResources)
