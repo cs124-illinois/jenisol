@@ -503,7 +503,6 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
                 fixedParametersField = field
                 val values = field.get(null)
                 check(values is Collection<*>) { "@${FixedParameters.name} field does not contain a collection" }
-                check(values.isNotEmpty()) { "@${FixedParameters.name} field contains as empty collection" }
                 @Suppress("SwallowedException")
                 val actualValues = try {
                     values.filterNotNull().forEach { it as ParameterGroup }
