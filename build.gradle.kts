@@ -5,7 +5,7 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2024.5.0"
+version = "2024.6.0"
 
 plugins {
     kotlin("jvm") version "2.0.0"
@@ -21,11 +21,11 @@ plugins {
 }
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
-    implementation("io.github.classgraph:classgraph:4.8.172")
+    implementation("io.github.classgraph:classgraph:4.8.173")
     implementation("design.aem:cloning:1.11.1")
     implementation("com.google.jimfs:jimfs:1.3.0")
 
-    testImplementation("io.kotest:kotest-runner-junit5:5.9.0")
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("org.slf4j:slf4j-simple:2.0.13")
 }
 tasks.withType<JavaCompile> {

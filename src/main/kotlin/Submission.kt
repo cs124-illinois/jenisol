@@ -744,7 +744,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
     }
 }
 
-sealed class SubmissionDesignError(message: String) : RuntimeException(message)
+sealed class SubmissionDesignError(message: String, val hint: String = "") : RuntimeException(message)
 class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable, hasInnerClasses: Boolean) :
     SubmissionDesignError(
         "${klass.name} didn't provide ${
@@ -766,26 +766,32 @@ class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable
                 ""
             }
         }",
+        "The submission is missing a method",
     )
 
 class SubmissionDesignMissingInnerClassError(klass: Class<*>, innerClass: Class<*>) : SubmissionDesignError(
     "${klass.name} didn't provide inner class ${innerClass.name}",
+    "The submission is missing an inner class",
 )
 
 class SubmissionDesignKotlinNotAccessibleError(klass: Class<*>, field: String) : SubmissionDesignError(
     "Property $field on ${klass.name} is not accessible (no getter is available)",
+    "The submission has a misconfigured property",
 )
 
 class SubmissionDesignKotlinNotModifiableError(klass: Class<*>, field: String) : SubmissionDesignError(
     "Property $field on ${klass.name} is not modifiable (no setter is available)",
+    "The submission has a misconfigured property",
 )
 
 class SubmissionDesignKotlinIsAccessibleError(klass: Class<*>, field: String) : SubmissionDesignError(
     "Property $field on ${klass.name} is accessible but should not be (getter is available)",
+    "The submission has a misconfigured property",
 )
 
 class SubmissionDesignKotlinIsModifiableError(klass: Class<*>, field: String) : SubmissionDesignError(
     "Property $field on ${klass.name} is modifiable but should not be (setter is available)",
+    "The submission has a misconfigured property",
 )
 
 class SubmissionDesignExtraMethodError(klass: Class<*>, executable: Executable) : SubmissionDesignError(
@@ -802,10 +808,12 @@ class SubmissionDesignExtraMethodError(klass: Class<*>, executable: Executable) 
             "constructor"
         }
     } ${executable.fullName(klass.isKotlin())}",
+    "The submission provides an extra method",
 )
 
 class SubmissionDesignExtraInnerClassError(klass: Class<*>, innerKlass: Class<*>) : SubmissionDesignError(
     "${klass.name} provided extra inner class ${innerKlass.name}",
+    "The submission provides an extra inner class",
 )
 
 class SubmissionDesignInheritanceError(klass: Class<*>, parent: Class<*>) : SubmissionDesignError(
@@ -824,19 +832,23 @@ class SubmissionTypeParameterError(klass: Class<*>, innerClass: Boolean = false)
 
 class SubmissionDesignMissingFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
     "Field ${field.fullName()} is not accessible in ${klass.name} but should be",
+    "The submission has a misconfigured field",
 )
 
 class SubmissionDesignExtraFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
     "Field ${field.fullName()} is accessible in ${klass.name} but should not be",
+    "The submission has a misconfigured field",
 )
 
 class SubmissionStaticFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
     "Field ${field.fullName()} is static in ${klass.name}, " +
         "but static fields are not permitted for this problem",
+    "The submission has a static field",
 )
 
 class SubmissionStaticPublicFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
     "Static field ${field.fullName()} in ${klass.name} must be private",
+    "The submission has a misconfigured field",
 )
 
 class SubmissionDesignClassError(klass: Class<*>, message: String, innerClass: Boolean = false) :
@@ -848,6 +860,7 @@ class SubmissionDesignClassError(klass: Class<*>, message: String, innerClass: B
                 ""
             }
         }${klass.name} $message",
+        "The submission class is configured incorrectly",
     )
 
 class DesignOnlyTestingError(klass: Class<*>) : Exception(
@@ -856,6 +869,7 @@ class DesignOnlyTestingError(klass: Class<*>) : Exception(
 
 class KotlinBadSetterOrGetter(property: String, bad: String) : SubmissionDesignError(
     "Kotlin class should declare a property $property and not manually implement $bad",
+    "The submission provides an unnecessary getter or setter",
 )
 
 @Suppress("SwallowedException")
