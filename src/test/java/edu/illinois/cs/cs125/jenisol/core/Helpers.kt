@@ -4,6 +4,8 @@ import io.github.classgraph.ClassGraph
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.ints.shouldBeLessThanOrEqual
+import io.kotest.matchers.longs.shouldBeGreaterThan
+import io.kotest.matchers.longs.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Dispatchers
@@ -97,8 +99,18 @@ suspend fun Solution.fullTest(
 
     @Suppress("RethrowCaughtException")
     fun TestResults.checkResults() = try {
-        filter { !receiverAsParameter || it.type != TestResult.Type.CONSTRUCTOR }
-            .map { it.runnerID }.zipWithNext().all { (first, second) -> first <= second } shouldBe true
+        filter { testResult -> !receiverAsParameter || testResult.type != TestResult.Type.CONSTRUCTOR }
+            .map { testResult -> testResult.runnerID }
+            .zipWithNext()
+            .all { (first, second) -> first <= second } shouldBe true
+
+        forEach { testResult ->
+            testResult.timeNanos shouldBeGreaterThan 0
+            testResult.solutionTimeNanos shouldBeGreaterThan 0
+            testResult.submissionTimeNanos shouldBeGreaterThan 0
+            testResult.solutionTimeNanos shouldBeLessThan testResult.timeNanos
+            testResult.submissionTimeNanos shouldBeLessThan testResult.timeNanos
+        }
 
         if (isCorrect) {
             succeeded shouldBe true

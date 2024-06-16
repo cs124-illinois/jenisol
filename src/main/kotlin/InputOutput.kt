@@ -109,7 +109,7 @@ fun defaultCaptureOutputControlInput(
         Pair(run(), null)
     } catch (e: OutOfMemoryError) {
         throw e
-    } catch (e: ThreadDeath) {
+    } catch (@Suppress("DEPRECATION") e: ThreadDeath) {
         throw e
     } catch (e: Throwable) {
         Pair(null, e)

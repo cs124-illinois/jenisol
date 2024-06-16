@@ -18,7 +18,6 @@ import edu.illinois.cs.cs125.jenisol.core.generators.systemInDummyExecutable
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
 import java.lang.reflect.Method
-import java.time.Instant
 import kotlin.reflect.full.companionObjectInstance
 
 data class Result<T, P : ParameterGroup>(
@@ -32,12 +31,14 @@ data class Result<T, P : ParameterGroup>(
     @JvmField val truncatedLines: Int,
     @JvmField val tag: Any?,
     @JvmField val modifiedParameters: Boolean,
+    @JvmField val lengthNanos: Long,
 ) {
     @Suppress("UNCHECKED_CAST")
     constructor(
         parameters: Array<Any?>,
         capturedResult: CapturedResult,
         modifiedParameters: Boolean,
+        lengthNanos: Long,
     ) : this(
         parameters.toParameterGroup() as P,
         capturedResult.returned as T?,
@@ -49,6 +50,7 @@ data class Result<T, P : ParameterGroup>(
         capturedResult.truncatedLines,
         capturedResult.tag,
         modifiedParameters,
+        lengthNanos,
     )
 
     override fun toString(): String {
@@ -97,7 +99,7 @@ data class TestResult<T, P : ParameterGroup>(
     @JvmField val allParameters: Parameters,
     @JvmField val solution: Result<T, P>,
     @JvmField val submission: Result<T, P>,
-    @JvmField val interval: Interval,
+    @JvmField val timeNanos: Long,
     @JvmField val complexity: Int,
     @JvmField val solutionClass: Class<*>,
     @JvmField val submissionClass: Class<*>,
@@ -111,6 +113,8 @@ data class TestResult<T, P : ParameterGroup>(
     @JvmField val submissionMethodString: String,
     @JvmField val currentRandom: Int,
     @JvmField val randomCount: Int,
+    @JvmField val solutionTimeNanos: Long,
+    @JvmField val submissionTimeNanos: Long,
 ) {
     @Suppress("UNCHECKED_CAST")
     @JvmField
@@ -243,23 +247,32 @@ Submission modified its parameters to ${
     }
 
     override fun toString(): String {
-        return "TestResult(runnerID=$runnerID, " +
+        return "TestResult(runnerID=$runnerID," +
             "stepCount=$stepCount, " +
             "runnerCount=$runnerCount, " +
             "solutionExecutable=$solutionExecutable, " +
             "submissionExecutable=$submissionExecutable, " +
             "type=$type, " +
-            "parameters=$parameters, " +
+            "allParameters=$allParameters, " +
             "solution=$solution, " +
-            "submission=${submission.safePrint()}, " +
-            "interval=$interval, " +
+            "submission=$submission, " +
+            "timeNanos=$timeNanos, " +
             "complexity=$complexity, " +
-            "solutionClass=${solutionClass.name}, " +
-            "submissionClass=${submissionClass.name}, " +
+            "solutionClass=$solutionClass, " +
+            "submissionClass=$submissionClass, " +
+            "solutionReceiver=$solutionReceiver, " +
+            "submissionReceiver=$submissionReceiver, " +
             "message=$message, " +
             "differs=$differs, " +
-            "succeeded=$succeeded, " +
-            "failed=$failed, " +
+            "submissionIsKotlin=$submissionIsKotlin, " +
+            "existingReceiverMismatch=$existingReceiverMismatch, " +
+            "solutionMethodString='$solutionMethodString', " +
+            "submissionMethodString='$submissionMethodString', " +
+            "currentRandom=$currentRandom, " +
+            "randomCount=$randomCount, " +
+            "solutionTimeNanos=$solutionTimeNanos, " +
+            "submissionTimeNanos=$submissionTimeNanos, " +
+            "parameters=$parameters, " +
             "verifierThrew=$verifierThrew)"
     }
 }
@@ -418,6 +431,7 @@ class TestRunner(
         val systemIn = systemInParameters?.input ?: listOf()
         val fileSystem = fileSystemParameters?.files ?: mapOf()
 
+        val started = System.nanoTime()
         return captureOutputControlInput(systemIn, fileSystem) {
             @Suppress("SpreadOperator")
             unwrap {
@@ -432,6 +446,7 @@ class TestRunner(
                 parameters,
                 it,
                 parametersCopy?.let { !submission.compare(parameters, parametersCopy) } ?: false,
+                System.nanoTime() - started,
             )
         }
     }
@@ -568,7 +583,7 @@ class TestRunner(
 
         val isBoth = solutionExecutable.isAnnotationPresent(Both::class.java)
 
-        val start = Instant.now()
+        val start = System.nanoTime()
         val submissionExecutable = if (isBoth) {
             solutionExecutable
         } else {
@@ -734,7 +749,7 @@ class TestRunner(
             stepCount, count++,
             solutionExecutable, submissionExecutable, stepType, parameters,
             solutionResult, submissionResult,
-            Interval(start),
+            System.nanoTime() - start,
             parameters.complexity.level,
             submission.solution.solution,
             submission.submission,
@@ -745,6 +760,8 @@ class TestRunner(
             submissionMethodString = submissionMethodString,
             currentRandom = random.lastRandom,
             randomCount = random.currentIndex,
+            solutionTimeNanos = solutionResult.lengthNanos,
+            submissionTimeNanos = submissionResult.lengthNanos,
         )
 
         val unmodifiedCopy = submissionExecutable.pairRun(
@@ -764,7 +781,7 @@ class TestRunner(
             @Suppress("TooGenericExceptionCaught")
             try {
                 unwrap { submission.solution.instanceValidator.invoke(null, submissionResult.returned) }
-            } catch (e: ThreadDeath) {
+            } catch (@Suppress("DEPRECATION") e: ThreadDeath) {
                 throw e
             } catch (e: Throwable) {
                 step.differs.add(TestResult.Differs.INSTANCE_VALIDATION_THREW)
@@ -807,10 +824,6 @@ class TestRunner(
         tested = true
         return this
     }
-}
-
-data class Interval(val start: Instant, val end: Instant) {
-    constructor(start: Instant) : this(start, Instant.now())
 }
 
 sealed class TestingControlException : RuntimeException()

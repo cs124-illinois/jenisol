@@ -58,7 +58,7 @@ class Solution(val solution: Class<*>) {
         allExecutables.forEach { it.isAccessible = true }
     }
 
-    val bothExecutables = solution.declaredMethods.toSet().filterNotNull().filter {
+    val bothExecutables = solution.declaredMethods.asSequence().toSet().filterNotNull().filter {
         it.isBoth()
     }.onEach { checkDesign { Both.validate(it, solution) } }.toSet()
 

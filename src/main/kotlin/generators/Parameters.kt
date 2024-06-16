@@ -53,7 +53,7 @@ data class Parameters(
             @Suppress("TooGenericExceptionCaught")
             try {
                 solutionCopy.contentDeepEquals(other.solutionCopy)
-            } catch (e: ThreadDeath) {
+            } catch (@Suppress("DEPRECATION") e: ThreadDeath) {
                 throw e
             } catch (e: Throwable) {
                 false
