@@ -134,5 +134,8 @@ nexusPublishing {
     }
 }
 signing {
+    setRequired {
+        gradle.taskGraph.allTasks.any { it is PublishToMavenRepository }
+    }
     sign(publishing.publications["jenisol"])
 }
