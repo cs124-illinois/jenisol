@@ -5,6 +5,7 @@ public class BadReceivers0 {
   private int value;
 
   public BadReceivers0(int setValue) {
+    value = setValue;
     throw new IllegalArgumentException();
   }
 

@@ -28,12 +28,19 @@ data class TestingClasses(
 )
 
 suspend fun Submission.testWithTimeout(settings: Settings, followTrace: List<Int>? = null): TestResults {
+    val testingEvents = mutableListOf<TestingEvent>()
     val runnable = object : Runnable {
         var results: TestResults? = null
         var error: Exception? = null
         override fun run() {
             try {
-                results = this@testWithTimeout.test(settings, followTrace = followTrace)
+                results = this@testWithTimeout.test(
+                    settings,
+                    followTrace = followTrace,
+                    testingEventListener = { event ->
+                        testingEvents += event
+                    },
+                )
             } catch (e: Exception) {
                 error = e
             }
@@ -50,6 +57,10 @@ suspend fun Submission.testWithTimeout(settings: Settings, followTrace: List<Int
     if (runnable.error != null) {
         throw runnable.error!!
     }
+
+    runnable.results!!.stepCount shouldBe testingEvents.filterIsInstance<StartTest>().size
+    runnable.results!!.stepCount shouldBe testingEvents.filterIsInstance<EndTest>().size
+
     return runnable.results!!
 }
 

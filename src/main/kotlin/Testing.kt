@@ -303,8 +303,8 @@ class TestResults(
     val untestedReceivers: Int,
     designOnly: Boolean? = null,
     val skippedSteps: List<Int>,
+    val stepCount: Int,
     val randomTrace: List<Int>? = null,
-    // val randomCallers: List<String>? = null
 ) : List<TestResult<Any, ParameterGroup>> by results {
     val succeeded = designOnly ?: finishedReceivers && all { it.succeeded } && completed
     val failed = !succeeded
@@ -348,9 +348,10 @@ class TestRunner(
     val runners: List<TestRunner>,
     var receivers: Value<Any?>?,
     val random: Submission.RecordingRandom,
+    val testingEventListener: TestingEventListener,
 ) {
-    val testResults: MutableList<TestResult<*, *>> = mutableListOf()
-    val skippedTests: MutableList<Int> = mutableListOf()
+    val testResults = mutableListOf<TestResult<*, *>>()
+    val skippedTests = mutableListOf<Int>()
 
     var staticOnly = submission.solution.skipReceiver
 
@@ -572,10 +573,18 @@ class TestRunner(
         }.toMutableList()
     }
 
+    fun willSkip() = settings.runAll!! && !staticOnly && created && receivers!!.submission == null
+
     @Suppress("ComplexMethod", "LongMethod", "ComplexCondition", "ReturnCount", "NestedBlockDepth")
     fun run(solutionExecutable: Executable, stepCount: Int, type: TestResult.Type? = null) {
         ranLastTest = false
         skippedLastTest = false
+
+        if (willSkip()) {
+            skippedLastTest = true
+            skippedTests += stepCount
+            return
+        }
 
         val creating = !created && type != TestResult.Type.INITIALIZER
         // Only proceed past failures if forced
@@ -705,12 +714,6 @@ class TestRunner(
             error("TestingControl exception mismatch: ${solutionResult.threw::class.java})")
         }
 
-        if (settings.runAll!! && !staticOnly && created && receivers!!.submission == null) {
-            skippedLastTest = true
-            skippedTests += stepCount
-            return
-        }
-
         val submissionMethodString = submissionExecutable.formatBoundMethodCall(
             parameters.submission.toParameterGroup(),
             submission.submission,
@@ -794,7 +797,7 @@ class TestRunner(
         }
         testResults.add(step)
 
-        if (step.succeeded || settings.runAll) {
+        if (step.succeeded || settings.runAll!!) {
             generator?.next()
         } else {
             generator?.prev()
@@ -802,15 +805,16 @@ class TestRunner(
 
         lastComplexity = parameters.complexity
 
-        if ((step.succeeded || settings.runAll) && creating && createdReceivers.isNotEmpty()) {
+        if ((step.succeeded || settings.runAll!!) && creating && createdReceivers.isNotEmpty()) {
             receivers = createdReceivers.removeAt(0)
         }
-        if ((step.succeeded || settings.runAll)) {
+        if ((step.succeeded || settings.runAll!!)) {
             returnedReceivers = createdReceivers
         }
     }
 
     fun next(stepCount: Int): TestRunner {
+        testingEventListener(StartTest(stepCount))
         if (!created) {
             run(receiverGenerators.first(), stepCount)
             created = true
@@ -822,6 +826,7 @@ class TestRunner(
             run(methodPicker.next(), stepCount)
         }
         tested = true
+        testingEventListener(EndTest(stepCount))
         return this
     }
 }

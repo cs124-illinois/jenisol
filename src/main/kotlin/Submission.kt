@@ -426,6 +426,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
     fun List<TestRunner>.toResults(
         settings: Settings,
         recordingRandom: RecordingRandom,
+        stepCount: Int,
         completed: Boolean = false,
         threw: Throwable? = null,
         timeout: Boolean = false,
@@ -438,9 +439,9 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         timeout,
         finishedReceivers,
         count { !it.tested },
+        stepCount = stepCount,
         skippedSteps = map { it.skippedTests }.flatten().sorted(),
         randomTrace = recordingRandom.finish(),
-        // randomCallers = recordingRandom.callers
     )
 
     inner class ExecutablePicker(private val random: Random, private val methods: Set<Executable>) {
@@ -534,6 +535,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         passedSettings: Settings = Settings(),
         captureOutputControlInput: CaptureOutputControlInput = ::defaultCaptureOutputControlInput,
         followTrace: List<Int>? = null,
+        testingEventListener: TestingEventListener? = null,
     ): TestResults {
         if (solution.solution.isDesignOnly() || solution.solution.isAbstract()) {
             throw DesignOnlyTestingError(solution.solution)
@@ -600,6 +602,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 runners,
                 receivers,
                 random,
+                testingEventListener ?: {},
             ).also { runner ->
                 if (receivers == null && !solution.skipReceiver) {
                     runner.next(stepCount++)
@@ -645,6 +648,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                         random,
                         timeout = true,
                         finishedReceivers = finishedReceivers,
+                        stepCount = stepCount,
                     )
                 }
 
@@ -682,6 +686,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                                     settings,
                                     random,
                                     finishedReceivers = finishedReceivers,
+                                    stepCount = stepCount,
                                 )
                             }
                         }
@@ -698,8 +703,8 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     if (switchReceivers) {
                         nextRunner()
                     }
-                    currentRunner!!.next(stepCount++).also {
-                        if (it.ranLastTest || it.skippedLastTest) {
+                    currentRunner!!.next(stepCount++).also { runner ->
+                        if (runner.ranLastTest || runner.skippedLastTest) {
                             testStepCount++
                             totalCount++
                         }
@@ -709,7 +714,12 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     if ((!settings.shrink!! || currentRunner!!.lastComplexity!!.level <= Complexity.MIN) &&
                         !settings.runAll
                     ) {
-                        return runners.toResults(settings, random, finishedReceivers = finishedReceivers)
+                        return runners.toResults(
+                            settings,
+                            random,
+                            finishedReceivers = finishedReceivers,
+                            stepCount = stepCount,
+                        )
                     }
                 }
                 if (currentRunner!!.returnedReceivers != null) {
@@ -732,6 +742,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 random,
                 completed = true,
                 finishedReceivers = runners.createdCount() >= neededReceivers,
+                stepCount = stepCount,
             )
         } catch (e: FollowTraceException) {
             throw e
@@ -739,7 +750,12 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             if (settings.testing!!) {
                 throw e
             }
-            return runners.toResults(settings, random, threw = e)
+            return runners.toResults(
+                settings,
+                random,
+                threw = e,
+                stepCount = stepCount,
+            )
         }
     }
 }
@@ -750,6 +766,7 @@ sealed class SubmissionDesignError(
         "unused",
     ) val hint: String = "",
 ) : RuntimeException(message)
+
 class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable, hasInnerClasses: Boolean) :
     SubmissionDesignError(
         "${klass.name} doesn't provide ${
