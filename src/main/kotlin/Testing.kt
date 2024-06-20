@@ -326,7 +326,7 @@ class TestResults(
     @Suppress("MagicNumber")
     override fun toString() = map { result ->
         result.apply {
-            "${
+            return@map "${
                 runnerID.toString().padStart(4, ' ')
             }: $solutionReceiver $solutionMethodString -> ${solution.returned}" +
                 "\n${" ".repeat(4)}: $submissionReceiver $submissionMethodString -> ${submission.returned}"
