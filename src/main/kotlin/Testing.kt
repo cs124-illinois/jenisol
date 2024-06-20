@@ -321,19 +321,17 @@ class TestResults(
         }.minByOrNull { it.stepCount }!!.explain(stacktrace)
     }
 
+    fun printTrace() = println(toString())
+
     @Suppress("MagicNumber")
-    fun printTrace() {
-        forEach { result ->
-            result.apply {
-                println(
-                    "${
-                        runnerID.toString().padStart(4, ' ')
-                    }: $solutionReceiver $solutionMethodString -> ${solution.returned}" +
-                        "\n${" ".repeat(4)}: $submissionReceiver $submissionMethodString -> ${submission.returned}",
-                )
-            }
+    override fun toString() = map { result ->
+        result.apply {
+            "${
+                runnerID.toString().padStart(4, ' ')
+            }: $solutionReceiver $solutionMethodString -> ${solution.returned}" +
+                "\n${" ".repeat(4)}: $submissionReceiver $submissionMethodString -> ${submission.returned}"
         }
-    }
+    }.joinToString("\n")
 }
 
 @Suppress("LongParameterList")

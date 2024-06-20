@@ -21,7 +21,7 @@ plugins {
 }
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
-    implementation("io.github.classgraph:classgraph:4.8.173")
+    implementation("io.github.classgraph:classgraph:4.8.174")
     implementation("design.aem:cloning:1.11.1")
     implementation("com.google.jimfs:jimfs:1.3.0")
 

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package edu.illinois.cs.cs125.jenisol.core
 
 typealias TestingEventListener = (event: TestingEvent) -> Unit
