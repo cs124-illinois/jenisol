@@ -326,10 +326,10 @@ class TestResults(
     @Suppress("MagicNumber")
     override fun toString() = map { result ->
         result.apply {
-            return@map "${
-                runnerID.toString().padStart(4, ' ')
-            }: $solutionReceiver $solutionMethodString -> ${solution.returned}" +
-                "\n${" ".repeat(4)}: $submissionReceiver $submissionMethodString -> ${submission.returned}"
+            return@map stepCount.toString().padStart(4, ' ') +
+                "${runnerID.toString().padStart(4, ' ')}: SOL: " +
+                "$solutionReceiver $solutionMethodString -> ${solution.returned}" +
+                "\n${" ".repeat(8)}: SUB: $submissionReceiver $submissionMethodString -> ${submission.returned}"
         }
     }.joinToString("\n")
 }
