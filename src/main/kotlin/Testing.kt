@@ -320,14 +320,25 @@ class TestResults(
     fun printTrace() = println(toString())
 
     @Suppress("MagicNumber")
-    override fun toString() = map { result ->
-        result.apply {
-            return@map stepCount.toString().padStart(4, ' ') +
-                "${runnerID.toString().padStart(4, ' ')}: SOL: " +
-                "$solutionReceiver $solutionMethodString -> ${solution.returned}" +
-                "\n${" ".repeat(8)}: SUB: $submissionReceiver $submissionMethodString -> ${submission.returned}"
-        }
-    }.joinToString("\n")
+    override fun toString(): String {
+        val rawString = map { result ->
+            result.apply {
+                val solutionName: String = if (type == TestResult.Type.CONSTRUCTOR) {
+                    ""
+                } else {
+                    "${solutionReceiver?.javaClass?.simpleName ?: solutionClass.simpleName}."
+                }
+
+                return@map stepCount.toString().padStart(4, ' ') +
+                    "${runnerID.toString().padStart(4, ' ')}: SOL: " +
+                    "${solutionName}$solutionMethodString -> ${solution.returned}" +
+                    "\n${" ".repeat(8)}: SUB: ${submissionReceiver ?: submissionClass.simpleName}." +
+                    "$submissionMethodString -> ${submission.returned}"
+            }
+        }.joinToString("\n")
+
+        return rawString
+    }
 }
 
 @Suppress("LongParameterList")
@@ -830,3 +841,69 @@ class TestRunner(
 sealed class TestingControlException : RuntimeException()
 class SkipTest : TestingControlException()
 class BoundComplexity : TestingControlException()
+
+private val hashCodeRegex = Regex("@[0-9a-fA-F]+$")
+private val lambdaRegex = Regex("""\${"$"}\${"$"}Lambda[^\s)]+""")
+
+@Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
+fun TestResults.solutionTestingSequence(): List<String> {
+    val orderedReceivers = mutableMapOf<String, MutableList<String>>()
+    forEach { result ->
+        val namesToCheck = listOf(result.solutionReceiver.toString(), result.solution.returned.toString())
+        for (checkingName in namesToCheck) {
+            if (checkingName == "null") {
+                continue
+            }
+            val regexMatch = hashCodeRegex.find(checkingName)
+            if (regexMatch !== null) {
+                val solutionClass = result.solutionClass.simpleName
+                if (!orderedReceivers.contains(solutionClass)) {
+                    orderedReceivers[solutionClass] = mutableListOf()
+                }
+                if (!orderedReceivers[solutionClass]!!.contains(checkingName)) {
+                    orderedReceivers[solutionClass]!! += checkingName
+                }
+            }
+        }
+    }
+
+    val outputRemaps = mutableMapOf<String, String>()
+    for ((klass, receiverList) in orderedReceivers) {
+        for ((i, receiver) in receiverList.withIndex()) {
+            outputRemaps[receiver] = "$klass#$i"
+        }
+    }
+
+    return mapIndexed { i, result ->
+        val receiverName = result.solutionReceiver.toString()
+        val resultName = result.solution.returned.toString()
+
+        val callString = if (receiverName != "null") {
+            "$receiverName.${result.solutionMethodString}"
+        } else {
+            "${result.solutionClass.simpleName}.${result.solutionMethodString}"
+        }
+        val resultString = if (result.solution.threw != null) {
+            "threw ${result.solution.threw.javaClass.simpleName}"
+        } else {
+            if (resultName != "null") {
+                "-> $resultName"
+            } else if (result.solution.stdout.isNotEmpty()) {
+                "printed \"${result.solution.stdout.trimEnd()}\""
+            } else {
+                ""
+            }
+        }
+
+        @Suppress("MagicNumber")
+        var fullString = "${i.toString().padStart(3, ' ')}: $callString $resultString"
+        for ((to, from) in outputRemaps) {
+            fullString = fullString.replace(to, from)
+        }
+        fullString = fullString.replace(lambdaRegex, "\\${"$"}\\${"$"}Lambda")
+        fullString = fullString.replace(result.solutionClass.name, result.solutionClass.simpleName)
+        fullString
+    }
+}
+
+fun TestResults.formatSolutionTestingSequence() = solutionTestingSequence().joinToString("\n")

@@ -88,7 +88,7 @@ class TestJavaExamples :
                 "${it.testName()}" { it.test() }
             }
             examples.java.receiver.constructoralwaysthrows.Correct::class.java.also {
-                "${it.testName()}" { it.test() }
+                "${it.testName()}" { it.test(ignoreSolutionSequenceMismatch = true) }
             }
             examples.java.receiver.equals.Correct::class.java.also {
                 "${it.testName()}" { it.test() }
@@ -157,7 +157,7 @@ class TestJavaExamples :
                 "${it.testName()}" { it.test() }
             }
             examples.java.receiver.arrayfactory.Correct::class.java.also {
-                "${it.testName()}" { it.test() }
+                "${it.testName()}" { it.test(ignoreSolutionSequenceMismatch = true) }
             }
             examples.java.receiver.superclassdesign.Correct::class.java.also {
                 "${it.testName()}" { it.test() }

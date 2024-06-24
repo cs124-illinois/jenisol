@@ -92,13 +92,14 @@ fun Class<*>.testingClasses(): TestingClasses {
     return TestingClasses(testName, primarySolution, otherSolutions, incorrect, badReceivers, badDesign)
 }
 
-@Suppress("LongMethod", "ComplexMethod")
+@Suppress("LongMethod", "ComplexMethod", "LongParameterList")
 suspend fun Solution.fullTest(
     klass: Class<*>,
     seed: Int,
     isCorrect: Boolean,
     solutionResults: TestResults? = null,
     overrideMaxCount: Int = 0,
+    ignoreSolutionSequenceMismatch: Boolean = false,
 ): Pair<TestResults, TestResults> {
     val baseSettings = Settings(
         shrink = true,
@@ -145,8 +146,12 @@ suspend fun Solution.fullTest(
 
     val submissionKlass = submission(klass)
     val original = submissionKlass.testWithTimeout(baseSettings).checkResults()
+    val originalTestingSequence = original.solutionTestingSequence()
+    val formattedTestingSequenc = originalTestingSequence.joinToString("\n")
+
     run {
-        val second = submissionKlass.testWithTimeout(baseSettings).checkResults()
+        val second = submissionKlass.testWithTimeout(baseSettings, followTrace = original.randomTrace).checkResults()
+        second.formatSolutionTestingSequence() shouldBe formattedTestingSequenc
         if (!isCorrect) {
             original.size shouldBeLessThanOrEqual baseSettings.maxTestCount
         }
@@ -164,6 +169,8 @@ suspend fun Solution.fullTest(
         val first = submissionKlass.testWithTimeout(noShrinkSettings).checkResults()
         val second = submissionKlass.testWithTimeout(noShrinkSettings).checkResults()
 
+        second.formatSolutionTestingSequence() shouldBe first.formatSolutionTestingSequence()
+
         if (!isCorrect) {
             first.indexOfFirst { it.failed } shouldBe first.size - 1
             failingTestCount = first.size
@@ -179,7 +186,9 @@ suspend fun Solution.fullTest(
     if (!isCorrect) {
         check(failingTestCount != -1)
         val reducedSettings = baseSettings.copy(testCount = failingTestCount, minTestCount = -1, maxTestCount = -1)
-        submissionKlass.testWithTimeout(reducedSettings).checkResults()
+        submissionKlass.testWithTimeout(reducedSettings).checkResults().also {
+            it.solutionTestingSequence().syncedUntilEnd(originalTestingSequence)
+        }
     }
     val testAllCounts = solutionResults?.size ?: 256.coerceAtLeast(original.size).coerceAtMost(maxCount)
     val testAllSettings =
@@ -195,6 +204,8 @@ suspend fun Solution.fullTest(
         .checkResults()
     val second = submissionKlass.testWithTimeout(testAllSettings, followTrace = solutionResults?.randomTrace)
         .checkResults()
+
+    first.formatSolutionTestingSequence() shouldBe second.formatSolutionTestingSequence()
 
     solutionResults?.randomTrace?.also { solutionRandomTrace ->
         solutionRandomTrace.size shouldBe first.randomTrace!!.size
@@ -223,7 +234,10 @@ suspend fun Solution.fullTest(
             submissionKlass.compare(firstResult.parameters, secondResult.parameters) shouldBe true
             firstResult.runnerID shouldBe secondResult.runnerID
             if (isCorrect) {
+                solutionResults.formatSolutionTestingSequence() shouldBe first.formatSolutionTestingSequence()
                 submissionKlass.compare(solutionResult.parameters, firstResult.parameters) shouldBe true
+            } else if (!ignoreSolutionSequenceMismatch) {
+                solutionResults.solutionTestingSequence().syncedUntilEnd(first.solutionTestingSequence())
             }
             solutionResult.runnerID shouldBe firstResult.runnerID
         }
@@ -232,72 +246,81 @@ suspend fun Solution.fullTest(
 }
 
 @Suppress("NestedBlockDepth", "ComplexMethod", "LongMethod")
-suspend fun Class<*>.test(overrideMaxCount: Int = 0) = this.testingClasses().apply {
-    solution(primarySolution).apply {
-        val (_, solutionResults) = submission(primarySolution).let {
-            if (!primarySolution.isDesignOnly()) {
-                fullTest(
-                    primarySolution,
-                    seed = 124,
-                    isCorrect = true,
-                    overrideMaxCount = overrideMaxCount,
-                ).also { (results) ->
-                    check(results.succeeded) { "Solution did not pass testing: ${results.explain()}" }
-                }
-            } else {
-                Pair(null, null)
-            }
-        }
-        otherSolutions.forEach { correct ->
-            submission(correct).also {
+suspend fun Class<*>.test(overrideMaxCount: Int = 0, ignoreSolutionSequenceMismatch: Boolean = false) =
+    this.testingClasses().apply {
+        solution(primarySolution).apply {
+            val (_, solutionResults) = submission(primarySolution).let {
                 if (!primarySolution.isDesignOnly()) {
                     fullTest(
-                        correct,
+                        primarySolution,
                         seed = 124,
                         isCorrect = true,
-                        solutionResults = solutionResults,
                         overrideMaxCount = overrideMaxCount,
-                    ).first.also { results ->
-                        check(!results.timeout)
-                        check(results.succeeded) {
-                            "Class marked as correct did not pass testing: ${results.explain(stacktrace = true)}"
-                        }
-                    }
-                }
-            }
-        }
-        (incorrect + badDesign + badReceivers)
-            .apply {
-                check(isNotEmpty()) { "No incorrect examples.java.examples for $testName" }
-            }.forEach { incorrect ->
-                if (incorrect in badDesign) {
-                    @Suppress("RethrowCaughtException")
-                    shouldThrow<SubmissionDesignError> {
-                        try {
-                            submission(incorrect)
-                        } catch (e: Exception) {
-                            throw e
-                        }
+                        ignoreSolutionSequenceMismatch = ignoreSolutionSequenceMismatch,
+                    ).also { (results) ->
+                        check(results.succeeded) { "Solution did not pass testing: ${results.explain()}" }
                     }
                 } else {
-                    check(!primarySolution.isDesignOnly()) {
-                        "Can't test Incorrect* examples when solution is design only"
-                    }
-                    fullTest(
-                        incorrect,
-                        seed = 124,
-                        isCorrect = false,
-                        solutionResults = solutionResults,
-                        overrideMaxCount = overrideMaxCount,
-                    ).first.also { results ->
-                        results.threw shouldBe null
-                        results.timeout shouldBe false
-                        results.failed shouldBe true
-                        results.filter { it.failed }
-                            .map { it.type }
-                            .distinct() shouldNotContainAll testingStepsShouldNotContain
+                    Pair(null, null)
+                }
+            }
+            otherSolutions.forEach { correct ->
+                submission(correct).also {
+                    if (!primarySolution.isDesignOnly()) {
+                        fullTest(
+                            correct,
+                            seed = 124,
+                            isCorrect = true,
+                            solutionResults = solutionResults,
+                            overrideMaxCount = overrideMaxCount,
+                            ignoreSolutionSequenceMismatch = ignoreSolutionSequenceMismatch,
+                        ).first.also { results ->
+                            check(!results.timeout)
+                            check(results.succeeded) {
+                                "Class marked as correct did not pass testing: ${results.explain(stacktrace = true)}"
+                            }
+                        }
                     }
                 }
             }
+            (incorrect + badDesign + badReceivers)
+                .apply {
+                    check(isNotEmpty()) { "No incorrect examples.java.examples for $testName" }
+                }.forEach { incorrect ->
+                    if (incorrect in badDesign) {
+                        @Suppress("RethrowCaughtException")
+                        shouldThrow<SubmissionDesignError> {
+                            try {
+                                submission(incorrect)
+                            } catch (e: Exception) {
+                                throw e
+                            }
+                        }
+                    } else {
+                        check(!primarySolution.isDesignOnly()) {
+                            "Can't test Incorrect* examples when solution is design only"
+                        }
+                        fullTest(
+                            incorrect,
+                            seed = 124,
+                            isCorrect = false,
+                            solutionResults = solutionResults,
+                            overrideMaxCount = overrideMaxCount,
+                            ignoreSolutionSequenceMismatch = ignoreSolutionSequenceMismatch,
+                        ).first.also { results ->
+                            results.threw shouldBe null
+                            results.timeout shouldBe false
+                            results.failed shouldBe true
+                            results.filter { it.failed }
+                                .map { it.type }
+                                .distinct() shouldNotContainAll testingStepsShouldNotContain
+                        }
+                    }
+                }
+        }
     }
+
+fun List<String>.syncedUntilEnd(other: List<String>) {
+    val smaller = listOf(this.size, other.size).min()
+    this.take(smaller).joinToString("\n") shouldBe other.take(smaller).joinToString("\n")
 }
