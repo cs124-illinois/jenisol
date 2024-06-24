@@ -35,7 +35,7 @@ suspend fun Submission.testWithTimeout(settings: Settings, followTrace: List<Int
         override fun run() {
             try {
                 results = this@testWithTimeout.test(
-                    settings,
+                    settings.copy(recordTrace = true),
                     followTrace = followTrace,
                     testingEventListener = { event ->
                         testingEvents += event
@@ -195,6 +195,12 @@ suspend fun Solution.fullTest(
         .checkResults()
     val second = submissionKlass.testWithTimeout(testAllSettings, followTrace = solutionResults?.randomTrace)
         .checkResults()
+
+    solutionResults?.randomTrace?.also { solutionRandomTrace ->
+        solutionRandomTrace.size shouldBe first.randomTrace!!.size
+        solutionRandomTrace.size shouldBe second.randomTrace!!.size
+    }
+
     first.size + first.skippedSteps.size shouldBe testAllCounts
     first.size shouldBe second.size
     first.forEachIndexed { index, firstResult ->

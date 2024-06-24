@@ -5,28 +5,27 @@ import io.kotest.matchers.shouldBe
 
 class KotlinTest {
     @Suppress("UNUSED_PARAMETER")
-    fun method(first: Int, second: String): Int {
-        return first
-    }
+    fun method(first: Int, second: String): Int = first
 }
 
-class TestHelpers : StringSpec({
-    "should print methods properly" {
-        val parameters = Two(1, "two")
-        val method = Test::class.java.declaredMethods.first()
-        method.formatBoundMethodCall(
-            parameters,
-            Test::class.java,
-        ) shouldBe """method(int first = 1, String second = "two")"""
-        method.formatBoundMethodCall(
-            parameters,
-            KotlinTest::class.java,
-        ) shouldBe """method(first: Int = 1, second: String = "two")"""
-    }
-    "should reformat types properly" {
-        "byte".toKotlinType() shouldBe "Byte"
-        "byte[]".toKotlinType() shouldBe "ByteArray"
-        "byte[][]".toKotlinType() shouldBe "Array<ByteArray>"
-        "byte[][][]".toKotlinType() shouldBe "Array<Array<ByteArray>>"
-    }
-})
+class TestHelpers :
+    StringSpec({
+        "should print methods properly" {
+            val parameters = Two(1, "two")
+            val method = Test::class.java.declaredMethods.first()
+            method.formatBoundMethodCall(
+                parameters,
+                Test::class.java,
+            ) shouldBe """method(int first = 1, String second = "two")"""
+            method.formatBoundMethodCall(
+                parameters,
+                KotlinTest::class.java,
+            ) shouldBe """method(first: Int = 1, second: String = "two")"""
+        }
+        "should reformat types properly" {
+            "byte".toKotlinType() shouldBe "Byte"
+            "byte[]".toKotlinType() shouldBe "ByteArray"
+            "byte[][]".toKotlinType() shouldBe "Array<ByteArray>"
+            "byte[][][]".toKotlinType() shouldBe "Array<Array<ByteArray>>"
+        }
+    })

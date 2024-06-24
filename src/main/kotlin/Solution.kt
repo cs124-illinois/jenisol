@@ -71,13 +71,15 @@ class Solution(val solution: Class<*>) {
     }.filter { executable ->
         when (executable) {
             is Constructor<*> -> true
-            is Method -> executable.isStatic() && (
-                executable.returnType == solution || (
-                    executable.returnType.isArray &&
-                        executable.returnType.getArrayType() == solution &&
-                        executable.returnType.getArrayDimension() == 1
+            is Method -> executable.isStatic() &&
+                (
+                    executable.returnType == solution ||
+                        (
+                            executable.returnType.isArray &&
+                                executable.returnType.getArrayType() == solution &&
+                                executable.returnType.getArrayDimension() == 1
+                            )
                     )
-                )
 
             else -> designError("Unexpected executable type")
         }
@@ -119,13 +121,15 @@ class Solution(val solution: Class<*>) {
         !method.isStatic() || method.receiverParameter()
     }.toSet()
 
-    val skipReceiver = needsReceiver.isEmpty() && receiverTransformers.isEmpty() &&
+    val skipReceiver = needsReceiver.isEmpty() &&
+        receiverTransformers.isEmpty() &&
         (
             receiverGenerators.isEmpty() ||
                 (receiverGenerators.size == 1 && receiverGenerators.first().parameters.isEmpty())
             )
 
-    val fauxStatic = !skipReceiver && solution.superclass == Any::class.java &&
+    val fauxStatic = !skipReceiver &&
+        solution.superclass == Any::class.java &&
         solution.declaredFields.all { it.isJenisol() || it.isStatic() } &&
         solution.declaredMethods.all {
             it.isJenisol() ||
@@ -525,20 +529,18 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
     }
 }
 
-fun Type.cleanTypeName(isKotlin: Boolean = false): String {
-    return if (this is ParameterizedType) {
-        "${rawType.typeName}<${
-            actualTypeArguments.map { it.typeName.replace("java.lang.", "") }.joinToString(", ") {
-                if (isKotlin) {
-                    it.toKotlinType()
-                } else {
-                    it
-                }
+fun Type.cleanTypeName(isKotlin: Boolean = false): String = if (this is ParameterizedType) {
+    "${rawType.typeName}<${
+        actualTypeArguments.map { it.typeName.replace("java.lang.", "") }.joinToString(", ") {
+            if (isKotlin) {
+                it.toKotlinType()
+            } else {
+                it
             }
-        }>"
-    } else {
-        typeName.replace("java.lang.", "")
-    }
+        }
+    }>"
+} else {
+    typeName.replace("java.lang.", "")
 }
 
 fun Field.fullName(): String {
@@ -611,7 +613,9 @@ fun Class<*>.findMethod(method: Method, solution: Class<*>) = this.declaredMetho
 fun compareReturn(solutionReturn: Type, solution: Class<*>, submissionReturn: Type, submission: Class<*>) = when {
     solutionReturn == submissionReturn -> true
     solutionReturn == solution && submissionReturn == submission -> true
-    solutionReturn is Class<*> && submissionReturn is Class<*> && solutionReturn.isArray &&
+    solutionReturn is Class<*> &&
+        submissionReturn is Class<*> &&
+        solutionReturn.isArray &&
         solutionReturn.getArrayType() == solution &&
         submissionReturn.isArray &&
         submissionReturn.getArrayType() == submission &&
@@ -638,7 +642,8 @@ fun compareParameters(
         .all { (solutionType, submissionType) ->
             when {
                 solutionType == submissionType -> true
-                solutionType !is ParameterizedType && submissionType is ParameterizedType &&
+                solutionType !is ParameterizedType &&
+                    submissionType is ParameterizedType &&
                     submissionType.rawType == solutionType -> {
                     submissionType.actualTypeArguments.all { it is Any }
                 }
@@ -646,7 +651,9 @@ fun compareParameters(
                 solutionType is TypeVariable<*> && submissionType is TypeVariable<*> ->
                     solutionType.bounds.contentEquals(submissionType.bounds)
 
-                submission.isKotlin() && solutionType is ParameterizedType && submissionType is ParameterizedType &&
+                submission.isKotlin() &&
+                    solutionType is ParameterizedType &&
+                    submissionType is ParameterizedType &&
                     solutionType.rawType == submissionType.rawType -> {
                     var matches = true
                     @Suppress("LoopWithTooManyJumpStatements")
@@ -732,51 +739,52 @@ data class Settings(
     val minTestCount: Int = -1,
     val maxTestCount: Int = -1,
     val testing: Boolean? = null,
+    val recordTrace: Boolean? = null,
 ) {
     companion object {
         const val DEFAULT_RECEIVER_RETRIES = 4
         val DEFAULTS = Settings(
             runAll = false,
             testing = false,
+            recordTrace = false,
         )
     }
 
     @Suppress("LongMethod", "ComplexMethod")
-    infix fun merge(other: Settings): Settings {
-        return Settings(
-            if (other.seed != -1) {
-                other.seed
-            } else {
-                seed
-            },
-            if (other.testCount != -1) {
-                other.testCount
-            } else {
-                testCount
-            },
-            other.shrink ?: shrink,
-            other.runAll ?: runAll,
-            if (other.methodCount != -1) {
-                other.methodCount
-            } else {
-                methodCount
-            },
-            if (other.receiverCount != -1) {
-                other.receiverCount
-            } else {
-                receiverCount
-            },
-            if (other.minTestCount != -1) {
-                other.minTestCount
-            } else {
-                minTestCount
-            },
-            if (other.maxTestCount != -1) {
-                other.maxTestCount
-            } else {
-                maxTestCount
-            },
-            other.testing ?: testing,
-        )
-    }
+    infix fun merge(other: Settings): Settings = Settings(
+        if (other.seed != -1) {
+            other.seed
+        } else {
+            seed
+        },
+        if (other.testCount != -1) {
+            other.testCount
+        } else {
+            testCount
+        },
+        other.shrink ?: shrink,
+        other.runAll ?: runAll,
+        if (other.methodCount != -1) {
+            other.methodCount
+        } else {
+            methodCount
+        },
+        if (other.receiverCount != -1) {
+            other.receiverCount
+        } else {
+            receiverCount
+        },
+        if (other.minTestCount != -1) {
+            other.minTestCount
+        } else {
+            minTestCount
+        },
+        if (other.maxTestCount != -1) {
+            other.maxTestCount
+        } else {
+            maxTestCount
+        },
+        other.testing ?: testing,
+        other.recordTrace ?: recordTrace,
+    )
 }

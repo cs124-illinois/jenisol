@@ -416,7 +416,7 @@ class GeneratorFactory(private val executables: Set<Executable>, val solution: S
     // Check to make sure we can generate all needed parameters
     init {
         executables.filter { it in typesNeeded }.forEach { executable ->
-            TypeParameterGenerator(executable.parameters, typeGenerators, cloner = Cloner.shared())
+            TypeParameterGenerator(executable.parameters, typeGenerators, Random, cloner = Cloner.shared())
         }
         if (solution.usesSystemIn) {
             require(SystemIn::class.java in typeGenerators) {
@@ -433,7 +433,7 @@ class GeneratorFactory(private val executables: Set<Executable>, val solution: S
     }
 
     fun get(
-        random: Random = Random,
+        random: Random,
         cloner: Cloner,
         typeGeneratorOverrides: Map<Type, TypeGeneratorGenerator>? = null,
         forExecutables: Set<Executable> = executables,
@@ -463,9 +463,7 @@ class GeneratorFactory(private val executables: Set<Executable>, val solution: S
     }
 }
 
-class Generators(
-    private val map: Map<Executable, ExecutableGenerator>,
-) : Map<Executable, ExecutableGenerator> by map
+class Generators(private val map: Map<Executable, ExecutableGenerator>) : Map<Executable, ExecutableGenerator> by map
 
 interface ExecutableGenerator {
     val fixed: List<Parameters>
@@ -550,7 +548,7 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
     }
 
     val needsParameterGenerator = fixedParameters == null || randomParameters == null
-    fun generate(parametersGenerator: ParametersGeneratorGenerator?, random: Random = Random, cloner: Cloner) =
+    fun generate(parametersGenerator: ParametersGeneratorGenerator?, random: Random, cloner: Cloner) =
         ConfiguredParametersGenerator(
             parametersGenerator,
             random,
@@ -564,7 +562,7 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
 @Suppress("LongParameterList")
 class ConfiguredParametersGenerator(
     parametersGenerator: ParametersGeneratorGenerator?,
-    random: Random = Random,
+    random: Random,
     private val cloner: Cloner,
     overrideFixed: Collection<ParameterGroup>?,
     private val overrideRandom: Method?,
@@ -608,7 +606,7 @@ class ConfiguredParametersGenerator(
         notNullParameters[index] && any == null
     }.isNotEmpty()
 
-    private val randomGroup = RandomGroup(random.nextLong())
+    private val randomGroup = RandomGroup(random)
     private var index = 0
     private var bound: Complexity? = null
     private val complexity = Complexity()
@@ -643,9 +641,7 @@ class ConfiguredParametersGenerator(
 
     @Suppress("LongMethod")
     override fun random(complexity: Complexity, runner: TestRunner): Parameters = if (overrideRandom != null) {
-        randomGroup.start()
-
-        val solutionParameters = getRandom(randomGroup.random, runner)
+        val solutionParameters = getRandom(randomGroup.record, runner)
         check(solutionParameters.size == notNullParameters.size)
         check(
             solutionParameters.toList()
@@ -658,7 +654,7 @@ class ConfiguredParametersGenerator(
         }
         @Suppress("TooGenericExceptionCaught")
         val submissionParameters = try {
-            cloneOrCopy(solutionParameters, cloner, randomFastCopy) { getRandom(randomGroup.random, runner) }
+            cloneOrCopy(solutionParameters, cloner, randomFastCopy) { getRandom(randomGroup.replay, runner) }
         } catch (e: Throwable) {
             if (!randomFastCopy) {
                 throw e
@@ -667,12 +663,13 @@ class ConfiguredParametersGenerator(
         }
 
         val solutionCopyParameters =
-            cloneOrCopy(solutionParameters, cloner, randomFastCopy) { getRandom(randomGroup.random, runner) }
+            cloneOrCopy(solutionParameters, cloner, randomFastCopy) { getRandom(randomGroup.replay, runner) }
         val submissionCopyParameters =
-            cloneOrCopy(solutionParameters, cloner, randomFastCopy) { getRandom(randomGroup.random, runner) }
+            cloneOrCopy(solutionParameters, cloner, randomFastCopy) { getRandom(randomGroup.replay, runner) }
         val unmodifiedParameters =
-            cloneOrCopy(solutionParameters, cloner, randomFastCopy) { getRandom(randomGroup.random, runner) }
-        randomGroup.stop()
+            cloneOrCopy(solutionParameters, cloner, randomFastCopy) { getRandom(randomGroup.replay, runner) }
+
+        randomGroup.check()
 
         setOf(
             solutionParameters,
@@ -710,14 +707,12 @@ class ConfiguredParametersGenerator(
         }
     }
 
-    override fun generate(runner: TestRunner): Parameters {
-        return if (index in fixed.indices) {
-            fixed[index]
-        } else {
-            random(bound ?: complexity, runner).also { randomStarted = true }
-        }.also {
-            index++
-        }
+    override fun generate(runner: TestRunner): Parameters = if (index in fixed.indices) {
+        fixed[index]
+    } else {
+        random(bound ?: complexity, runner).also { randomStarted = true }
+    }.also {
+        index++
     }
 
     override fun next() {
@@ -753,7 +748,7 @@ class EmptyParameterMethodGenerator : ExecutableGenerator {
 class TypeParameterGenerator(
     parameters: Array<out Parameter>,
     generators: Map<Type, TypeGeneratorGenerator> = mapOf(),
-    private val random: Random = Random,
+    private val random: Random,
     private val cloner: Cloner,
 ) {
     private val parameterGenerators = parameters.map {
@@ -796,20 +791,20 @@ class TypeParameterGenerator(
         }
     }
 
-    fun random(complexity: Complexity, runner: TestRunner?): Parameters {
-        return parameterGenerators.map { it.random(complexity, runner) }.map {
-            ParameterValues(it.solution, it.submission, it.solutionCopy, it.submissionCopy, it.unmodifiedCopy)
-        }.unzip().let { (solution, submission, solutionCopy, submissionCopy, unmodifiedCopy) ->
-            Parameters(
-                solution.toTypedArray(),
-                submission.toTypedArray(),
-                solutionCopy.toTypedArray(),
-                submissionCopy.toTypedArray(),
-                unmodifiedCopy.toTypedArray(),
-                Parameters.Type.RANDOM,
-                complexity,
-            )
-        }
+    fun random(complexity: Complexity, runner: TestRunner?): Parameters = parameterGenerators.map {
+        it.random(complexity, runner)
+    }.map {
+        ParameterValues(it.solution, it.submission, it.solutionCopy, it.submissionCopy, it.unmodifiedCopy)
+    }.unzip().let { (solution, submission, solutionCopy, submissionCopy, unmodifiedCopy) ->
+        Parameters(
+            solution.toTypedArray(),
+            submission.toTypedArray(),
+            solutionCopy.toTypedArray(),
+            submissionCopy.toTypedArray(),
+            unmodifiedCopy.toTypedArray(),
+            Parameters.Type.RANDOM,
+            complexity,
+        )
     }
 }
 
@@ -827,8 +822,11 @@ data class ParameterValues<T>(
 )
 
 @Suppress("MagicNumber")
-fun <E> List<ParameterValues<E>>.unzip(): List<List<E>> {
-    return fold(listOf(ArrayList<E>(), ArrayList<E>(), ArrayList<E>(), ArrayList<E>(), ArrayList<E>())) { r, i ->
+fun <E> List<ParameterValues<E>>.unzip(): List<List<E>> =
+    fold(listOf(ArrayList<E>(), ArrayList<E>(), ArrayList<E>(), ArrayList<E>(), ArrayList<E>())) {
+            r,
+            i,
+        ->
         r[0].add(i.solution)
         r[1].add(i.submission)
         r[2].add(i.solutionCopy)
@@ -836,4 +834,3 @@ fun <E> List<ParameterValues<E>>.unzip(): List<List<E>> {
         r[4].add(i.unmodifiedCopy)
         r
     }
-}

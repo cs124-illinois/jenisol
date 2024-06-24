@@ -9,8 +9,6 @@ class Incorrect0 {
             return transform(value)
         }
 
-        private fun plus2(x: Int): Int {
-            return x + 2
-        }
+        private fun plus2(x: Int): Int = x + 2
     }
 }

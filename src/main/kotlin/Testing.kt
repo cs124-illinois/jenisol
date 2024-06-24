@@ -53,16 +53,14 @@ data class Result<T, P : ParameterGroup>(
         lengthNanos,
     )
 
-    override fun toString(): String {
-        return "Result(parameters=$parameters, " +
-            "returned=${returned?.safePrint()}, " +
-            "threw=${threw?.safePrint()}, " +
-            "stdout='$stdout', " +
-            "stderr='$stderr', " +
-            "stdin='$stdin', " +
-            "tag='$tag', " +
-            "modifiedParameters=$modifiedParameters)"
-    }
+    override fun toString(): String = "Result(parameters=$parameters, " +
+        "returned=${returned?.safePrint()}, " +
+        "threw=${threw?.safePrint()}, " +
+        "stdout='$stdout', " +
+        "stderr='$stderr', " +
+        "stdin='$stdin', " +
+        "tag='$tag', " +
+        "modifiedParameters=$modifiedParameters)"
 }
 
 internal fun <P : ParameterGroup> Executable.formatBoundMethodCall(parameterValues: P, klass: Class<*>): String {
@@ -246,35 +244,33 @@ Submission modified its parameters to ${
             "$resultString${message?.let { "\nAdditional Explanation: $it" } ?: ""}"
     }
 
-    override fun toString(): String {
-        return "TestResult(runnerID=$runnerID," +
-            "stepCount=$stepCount, " +
-            "runnerCount=$runnerCount, " +
-            "solutionExecutable=$solutionExecutable, " +
-            "submissionExecutable=$submissionExecutable, " +
-            "type=$type, " +
-            "allParameters=$allParameters, " +
-            "solution=$solution, " +
-            "submission=$submission, " +
-            "timeNanos=$timeNanos, " +
-            "complexity=$complexity, " +
-            "solutionClass=$solutionClass, " +
-            "submissionClass=$submissionClass, " +
-            "solutionReceiver=$solutionReceiver, " +
-            "submissionReceiver=$submissionReceiver, " +
-            "message=$message, " +
-            "differs=$differs, " +
-            "submissionIsKotlin=$submissionIsKotlin, " +
-            "existingReceiverMismatch=$existingReceiverMismatch, " +
-            "solutionMethodString='$solutionMethodString', " +
-            "submissionMethodString='$submissionMethodString', " +
-            "currentRandom=$currentRandom, " +
-            "randomCount=$randomCount, " +
-            "solutionTimeNanos=$solutionTimeNanos, " +
-            "submissionTimeNanos=$submissionTimeNanos, " +
-            "parameters=$parameters, " +
-            "verifierThrew=$verifierThrew)"
-    }
+    override fun toString(): String = "TestResult(runnerID=$runnerID," +
+        "stepCount=$stepCount, " +
+        "runnerCount=$runnerCount, " +
+        "solutionExecutable=$solutionExecutable, " +
+        "submissionExecutable=$submissionExecutable, " +
+        "type=$type, " +
+        "allParameters=$allParameters, " +
+        "solution=$solution, " +
+        "submission=$submission, " +
+        "timeNanos=$timeNanos, " +
+        "complexity=$complexity, " +
+        "solutionClass=$solutionClass, " +
+        "submissionClass=$submissionClass, " +
+        "solutionReceiver=$solutionReceiver, " +
+        "submissionReceiver=$submissionReceiver, " +
+        "message=$message, " +
+        "differs=$differs, " +
+        "submissionIsKotlin=$submissionIsKotlin, " +
+        "existingReceiverMismatch=$existingReceiverMismatch, " +
+        "solutionMethodString='$solutionMethodString', " +
+        "submissionMethodString='$submissionMethodString', " +
+        "currentRandom=$currentRandom, " +
+        "randomCount=$randomCount, " +
+        "solutionTimeNanos=$solutionTimeNanos, " +
+        "submissionTimeNanos=$submissionTimeNanos, " +
+        "parameters=$parameters, " +
+        "verifierThrew=$verifierThrew)"
 }
 
 fun print(value: Any?): String = when {
@@ -356,11 +352,13 @@ class TestRunner(
     val failed: Boolean
         get() = testResults.any { it.failed }
     val ready: Boolean
-        get() = methodPicker.more() && if (staticOnly) {
-            true
-        } else {
-            (settings.runAll!! && receivers?.solution != null) || (testResults.none { it.failed } && receivers != null)
-        }
+        get() = methodPicker.more() &&
+            if (staticOnly) {
+                true
+            } else {
+                (settings.runAll!! && receivers?.solution != null) ||
+                    (testResults.none { it.failed } && receivers != null)
+            }
     var ranLastTest = false
     var skippedLastTest = false
 

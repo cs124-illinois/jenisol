@@ -422,9 +422,7 @@ fun Array<Any?>.toParameterGroup() = when (size) {
 object None : ParameterGroup() {
     override fun toArray() = arrayOf<Any?>()
     override fun toList() = listOf<Any?>()
-    override fun toString(): String {
-        return "None()"
-    }
+    override fun toString(): String = "None()"
 
     override val size = 0
 }
@@ -450,9 +448,7 @@ class One<I>(setFirst: I) : ParameterGroup() {
     }
 
     override fun hashCode() = first?.deepHashCode() ?: 0
-    override fun toString(): String {
-        return toArray().safeContentDeepToString()
-    }
+    override fun toString(): String = toArray().safeContentDeepToString()
 }
 
 class Two<I, J>(setFirst: I, setSecond: J) : ParameterGroup() {
@@ -489,9 +485,7 @@ class Two<I, J>(setFirst: I, setSecond: J) : ParameterGroup() {
         return result
     }
 
-    override fun toString(): String {
-        return toArray().safeContentDeepToString()
-    }
+    override fun toString(): String = toArray().safeContentDeepToString()
 }
 
 class Three<I, J, K>(setFirst: I, setSecond: J, setThird: K) : ParameterGroup() {
@@ -538,17 +532,10 @@ class Three<I, J, K>(setFirst: I, setSecond: J, setThird: K) : ParameterGroup() 
         return result
     }
 
-    override fun toString(): String {
-        return toArray().safeContentDeepToString()
-    }
+    override fun toString(): String = toArray().safeContentDeepToString()
 }
 
-class Four<I, J, K, L>(
-    setFirst: I,
-    setSecond: J,
-    setThird: K,
-    setFourth: L,
-) : ParameterGroup() {
+class Four<I, J, K, L>(setFirst: I, setSecond: J, setThird: K, setFourth: L) : ParameterGroup() {
     @JvmField
     val first: I = if (setFirst is String) {
         @Suppress("UNCHECKED_CAST")
@@ -603,9 +590,7 @@ class Four<I, J, K, L>(
         return result
     }
 
-    override fun toString(): String {
-        return toArray().safeContentDeepToString()
-    }
+    override fun toString(): String = toArray().safeContentDeepToString()
 }
 
 fun Any.deepHashCode() = when {
@@ -690,9 +675,7 @@ fun Any.safePrint(): String = try {
     this::class.simpleName ?: this.javaClass.packageName
 }
 
-inline fun <reified T> T.deepCopy(cloner: Cloner): T {
-    return when {
-        this == null -> null as T
-        else -> cloner.deepClone(this)
-    }
+inline fun <reified T> T.deepCopy(cloner: Cloner): T = when {
+    this == null -> null as T
+    else -> cloner.deepClone(this)
 }

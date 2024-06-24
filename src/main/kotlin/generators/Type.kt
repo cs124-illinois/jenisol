@@ -218,7 +218,7 @@ class OverrideTypeGenerator(
 
         else -> null
     }
-    private val randomGroup = RandomGroup(random.nextLong())
+    private val randomGroup = RandomGroup(random)
 
     override val simple: Set<Value<Any>> =
         simpleOverride ?: default?.simple as Set<Value<Any>>
@@ -249,22 +249,22 @@ class OverrideTypeGenerator(
             return default.random(complexity, runner) as Value<Any>
         }
 
-        randomGroup.start()
-        val solution = getRandom(randomGroup.random, complexity)
+        val solution = getRandom(randomGroup.record, complexity)
 
         @Suppress("TooGenericExceptionCaught")
         val submission = try {
-            cloneOrCopy(solution, cloner, randomFastCopy) { getRandom(randomGroup.random, complexity) }
+            cloneOrCopy(solution, cloner, randomFastCopy) { getRandom(randomGroup.replay, complexity) }
         } catch (e: Throwable) {
             if (!simpleFastCopy) {
                 throw e
             }
             error("Cloning parameters failed. Try disabling fast copy by setting fastCopy = false on @RandomType")
         }
-        val solutionCopy = cloneOrCopy(solution, cloner, randomFastCopy) { getRandom(randomGroup.random, complexity) }
-        val submissionCopy = cloneOrCopy(solution, cloner, randomFastCopy) { getRandom(randomGroup.random, complexity) }
-        val unmodifiedCopy = cloneOrCopy(solution, cloner, randomFastCopy) { getRandom(randomGroup.random, complexity) }
-        randomGroup.stop()
+        val solutionCopy = cloneOrCopy(solution, cloner, randomFastCopy) { getRandom(randomGroup.replay, complexity) }
+        val submissionCopy = cloneOrCopy(solution, cloner, randomFastCopy) { getRandom(randomGroup.replay, complexity) }
+        val unmodifiedCopy = cloneOrCopy(solution, cloner, randomFastCopy) { getRandom(randomGroup.replay, complexity) }
+
+        randomGroup.check()
 
         check(setOf(solution, submission, solutionCopy, submissionCopy, unmodifiedCopy).size == 1) {
             "@${RandomType.name} method for ${klass.name} did not return equal values"
@@ -347,8 +347,10 @@ object Defaults {
                         create(type.actualTypeArguments[0], random, cloner),
                     )
                 }
-            } else if (type.rawType == java.util.Map::class.java && type.actualTypeArguments.size == 2 &&
-                map.containsKey(type.actualTypeArguments[0]) && map.containsKey(type.actualTypeArguments[1])
+            } else if (type.rawType == java.util.Map::class.java &&
+                type.actualTypeArguments.size == 2 &&
+                map.containsKey(type.actualTypeArguments[0]) &&
+                map.containsKey(type.actualTypeArguments[1])
             ) {
                 return { random, cloner ->
                     MapGenerator(
@@ -420,8 +422,7 @@ class MapGenerator(
     private val cloner: Cloner,
     private val keyGenerator: TypeGenerator<*>,
     private val valueGenerator: TypeGenerator<*>,
-) :
-    TypeGenerators<Any>(random, cloner) {
+) : TypeGenerators<Any>(random, cloner) {
 
     override val simple: Set<Value<Any>>
         get() {
@@ -464,8 +465,7 @@ class ArrayGenerator(
     private val cloner: Cloner,
     private val klass: Class<*>,
     private val componentGenerator: TypeGenerator<*>,
-) :
-    TypeGenerators<Any>(random, cloner) {
+) : TypeGenerators<Any>(random, cloner) {
 
     override val simple: Set<Value<Any>>
         get() {
@@ -482,9 +482,8 @@ class ArrayGenerator(
 
     override val edge: Set<Value<Any?>> = setOf(null).values(ZeroComplexity, cloner)
 
-    override fun random(complexity: Complexity, runner: TestRunner?): Value<Any> {
-        return random(complexity, complexity, true, runner)
-    }
+    override fun random(complexity: Complexity, runner: TestRunner?): Value<Any> =
+        random(complexity, complexity, true, runner)
 
     fun random(complexity: Complexity, componentComplexity: Complexity, top: Boolean, runner: TestRunner?): Value<Any> {
         val (currentComplexity, nextComplexity) = if (klass.isArray) {
@@ -692,12 +691,11 @@ class StringGenerator(random: Random, private val cloner: Cloner) : TypeGenerato
 
     companion object {
         @Suppress("MemberVisibilityCanBePrivate")
-        fun random(complexity: Complexity, random: Random = Random): String {
-            return (0 until random.nextInt((complexity.level * 2 + 1)))
+        fun random(complexity: Complexity, random: Random = Random): String =
+            (0 until random.nextInt((complexity.level * 2 + 1)))
                 .map { random.nextInt(CharGenerator.ALPHANUMERIC_CHARS.size) }
                 .map(CharGenerator.ALPHANUMERIC_CHARS::get)
                 .joinToString("")
-        }
 
         fun create(random: Random = Random, cloner: Cloner) = StringGenerator(random, cloner)
     }
@@ -737,9 +735,7 @@ class JenisolFileSystem(val files: Map<String, ByteArray?> = mapOf()) {
         else -> asByteBuffers == other.asByteBuffers
     }
 
-    override fun hashCode(): Int {
-        return asByteBuffers.hashCode()
-    }
+    override fun hashCode(): Int = asByteBuffers.hashCode()
 }
 
 @Suppress("UNUSED_PARAMETER")
@@ -838,11 +834,9 @@ fun kotlin.Array<Type>.compareBoxed(other: kotlin.Array<Type>) = when {
         }
 }
 
-fun Type.compare(other: Type): Boolean {
-    return when (other) {
-        this -> true
-        else -> false
-    }
+fun Type.compare(other: Type): Boolean = when (other) {
+    this -> true
+    else -> false
 }
 
 fun Type.compareBoxed(other: Type) = when {
@@ -921,37 +915,36 @@ fun Any.isAnyArray() = when (this) {
 
 fun Any.isLambdaMethod() = this.javaClass.name.contains("$${"$"}Lambda$")
 
-class RandomGroup(seed: Long = Random.nextLong()) {
-    private val seedGenerator = Random(seed)
-    private var _random: java.util.Random? = null
+class RandomGroup(private val internalRandom: Random) {
+    private val values = mutableListOf<Int>()
 
-    private var running: Boolean = false
-    private var currentSeed: Long = seedGenerator.nextLong()
-    private var ended: Long? = null
-
-    fun start() {
-        check(!running) { "Already started" }
-        currentSeed = seedGenerator.nextLong()
-        _random = null
-        ended = null
-    }
-
-    val random: java.util.Random
+    val record: java.util.Random
         get() {
-            val thisEnd = _random?.nextLong()
-            if (ended != null) {
-                check(thisEnd == ended) { "Random generator out of sync: $ended $thisEnd" }
+            values.clear()
+            return object : java.util.Random() {
+                override fun next(bits: Int): Int {
+                    val value = internalRandom.nextBits(bits)
+                    values += value
+                    return value
+                }
             }
-            ended = thisEnd
-            _random = java.util.Random().also { it.setSeed(currentSeed) }
-            return _random!!
         }
 
-    fun stop() {
-        check(_random != null) { "Never used" }
-        val thisEnd = _random?.nextLong()
-        if (ended != null) {
-            check(thisEnd == ended) { "Random generator out of sync" }
+    private var counter = -1
+    val replay: java.util.Random
+        get() {
+            check(counter == -1 || counter == values.size) { "Replay out of sync" }
+            counter = 0
+            return object : java.util.Random() {
+                override fun next(bits: Int): Int {
+                    check(counter < values.size) { "Replay out of sync" }
+                    return values[counter++]
+                }
+            }
         }
+
+    fun check() {
+        check(counter == -1 || counter == values.size) { "Replay out of sync" }
+        values.clear()
     }
 }

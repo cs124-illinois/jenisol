@@ -14,9 +14,8 @@ interface Comparator {
 
 const val DEFAULT_ITERABLE_LENGTH = 1024
 
-class Comparators(
-    private val comparators: MutableMap<Class<*>, Comparator> = mutableMapOf(),
-) : MutableMap<Class<*>, Comparator> by comparators {
+class Comparators(private val comparators: MutableMap<Class<*>, Comparator> = mutableMapOf()) :
+    MutableMap<Class<*>, Comparator> by comparators {
     init {
         comparators[Any::class.java] = object : Comparator {
             override val descendants = false
@@ -34,39 +33,46 @@ class Comparators(
                 @Suppress("MagicNumber")
                 when {
                     solution::class.java == submission::class.java -> true
-                    solutionClass != null && submissionClass != null &&
+                    solutionClass != null &&
+                        submissionClass != null &&
                         solution is AssertionError &&
                         submission is IllegalArgumentException -> true
 
-                    solutionClass != null && submissionClass != null &&
+                    solutionClass != null &&
+                        submissionClass != null &&
                         solution is IllegalArgumentException &&
                         submission is AssertionError -> true
 
-                    solutionClass != null && submissionClass != null &&
+                    solutionClass != null &&
+                        submissionClass != null &&
                         (solution is AssertionError || solution is IllegalArgumentException) &&
                         submission is NullPointerException &&
                         submission.message?.startsWith("Parameter specified as non-null is null") == true &&
                         !solutionClass.isKotlin() &&
                         submissionClass.isKotlin() -> true
 
-                    solutionClass != null && submissionClass != null &&
+                    solutionClass != null &&
+                        submissionClass != null &&
                         solution is NullPointerException &&
                         solution.message?.startsWith("Parameter specified as non-null is null") == true &&
                         (submission is AssertionError || submission is IllegalArgumentException) &&
                         solutionClass.isKotlin() &&
                         !submissionClass.isKotlin() -> true
 
-                    solutionClass != null && submissionClass != null &&
+                    solutionClass != null &&
+                        submissionClass != null &&
                         solution is ArrayIndexOutOfBoundsException &&
                         submission is IndexOutOfBoundsException &&
                         solution.message == submission.message -> true
 
-                    solutionClass != null && submissionClass != null &&
+                    solutionClass != null &&
+                        submissionClass != null &&
                         solution is IndexOutOfBoundsException &&
                         submission is ArrayIndexOutOfBoundsException &&
                         solution.message == submission.message -> true
 
-                    solutionClass != null && submissionClass != null &&
+                    solutionClass != null &&
+                        submissionClass != null &&
                         solution is ArrayIndexOutOfBoundsException &&
                         solution.message != null &&
                         submission is IndexOutOfBoundsException &&
@@ -87,7 +93,8 @@ class Comparators(
                         }
                     }
 
-                    solutionClass != null && submissionClass != null &&
+                    solutionClass != null &&
+                        submissionClass != null &&
                         solution is java.lang.IndexOutOfBoundsException &&
                         solution.message != null &&
                         submission is ArrayIndexOutOfBoundsException &&
@@ -247,14 +254,15 @@ fun Any.deepEquals(
     this.isAnyArray() && submission.isAnyArray() -> {
         val solutionBoxed = this.boxArray()
         val submissionBoxed = submission.boxArray()
-        (solutionBoxed.size == submissionBoxed.size) && solutionBoxed.zip(submissionBoxed)
-            .all { (solution, submission) ->
-                when {
-                    solution === submission -> true
-                    solution == null || submission == null -> false
-                    else -> solution.deepEquals(submission, comparators, solutionClass, submissionClass)
+        (solutionBoxed.size == submissionBoxed.size) &&
+            solutionBoxed.zip(submissionBoxed)
+                .all { (solution, submission) ->
+                    when {
+                        solution === submission -> true
+                        solution == null || submission == null -> false
+                        else -> solution.deepEquals(submission, comparators, solutionClass, submissionClass)
+                    }
                 }
-            }
     }
 
     else -> this.lambdaGuessEquals(submission)

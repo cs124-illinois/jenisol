@@ -12,7 +12,7 @@ plugins {
     java
     `maven-publish`
     signing
-    id("org.jmailen.kotlinter") version "4.3.0"
+    id("org.jmailen.kotlinter") version "4.4.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
     id("com.github.ben-manes.versions") version "0.51.0"

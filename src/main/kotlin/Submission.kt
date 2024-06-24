@@ -190,12 +190,13 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             }
         }.toMap().also { executableMap ->
 
-            val kotlinReflectionSupported = isKotlin && try {
-                submission.kotlin.memberFunctions
-                true
-            } catch (e: UnsupportedOperationException) {
-                false
-            }
+            val kotlinReflectionSupported = isKotlin &&
+                try {
+                    submission.kotlin.memberFunctions
+                    true
+                } catch (e: UnsupportedOperationException) {
+                    false
+                }
 
             if (kotlinReflectionSupported) {
                 @Suppress("MagicNumber")
@@ -495,7 +496,8 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         fun more() = methods.size > finished.size
     }
 
-    class RecordingRandom(seed: Long = nextLong(), private val follow: List<Int>? = null) : Random() {
+    class RecordingRandom(seed: Long, private val follow: List<Int>? = null, private val record: Boolean = false) :
+        Random() {
         private val random = Random(seed)
         private val trace = mutableListOf<Int>()
 
@@ -503,24 +505,23 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         var lastRandom = 0
 
         @Suppress("ThrowingExceptionsWithoutMessageOrCause")
-        override fun nextBits(bitCount: Int): Int {
-            return random.nextBits(bitCount).also {
-                trace += it
-                lastRandom = it
-            }.also {
-                if (follow != null && (follow.getOrNull(currentIndex) != it)) {
-                    throw FollowTraceException(currentIndex)
-                }
-                currentIndex++
+        override fun nextBits(bitCount: Int): Int = random.nextBits(bitCount).also { newValue ->
+            if (record) {
+                trace += newValue
             }
+            lastRandom = newValue
+        }.also { actualValue ->
+            if (follow != null) {
+                val expectedValue = follow.getOrNull(currentIndex)
+                if (expectedValue != actualValue) {
+                    throw FollowTraceException(currentIndex, "expected $expectedValue, actual $actualValue")
+                }
+            }
+
+            currentIndex++
         }
 
-        fun finish(): List<Int> {
-            if (follow != null && currentIndex != trace.size) {
-                throw FollowTraceException(currentIndex)
-            }
-            return trace.toList()
-        }
+        fun finish(): List<Int> = trace.toList()
     }
 
     fun findReceiver(runners: List<TestRunner>, solutionReceiver: Any) = let {
@@ -548,9 +549,9 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         }
 
         val random = if (settings.seed == -1) {
-            RecordingRandom(follow = followTrace)
+            RecordingRandom(Random.nextLong(), follow = followTrace, record = settings.recordTrace!!)
         } else {
-            RecordingRandom(settings.seed.toLong(), follow = followTrace)
+            RecordingRandom(settings.seed.toLong(), follow = followTrace, record = settings.recordTrace!!)
         }
 
         val runners: MutableList<TestRunner> = mutableListOf()
@@ -791,87 +792,100 @@ class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable
         "Your submission is missing a method. Check your method signatures.",
     )
 
-class SubmissionDesignMissingInnerClassError(klass: Class<*>, innerClass: Class<*>) : SubmissionDesignError(
-    "${klass.name} doesn't provide inner class ${innerClass.name}.",
-    "Your submission is missing an inner class.",
-)
+class SubmissionDesignMissingInnerClassError(klass: Class<*>, innerClass: Class<*>) :
+    SubmissionDesignError(
+        "${klass.name} doesn't provide inner class ${innerClass.name}.",
+        "Your submission is missing an inner class.",
+    )
 
-class SubmissionDesignKotlinNotAccessibleError(klass: Class<*>, field: String) : SubmissionDesignError(
-    "Property $field on ${klass.name} is missing or not accessible.",
-    "Your submission has a missing property.",
-)
+class SubmissionDesignKotlinNotAccessibleError(klass: Class<*>, field: String) :
+    SubmissionDesignError(
+        "Property $field on ${klass.name} is missing or not accessible.",
+        "Your submission has a missing property.",
+    )
 
-class SubmissionDesignKotlinNotModifiableError(klass: Class<*>, field: String) : SubmissionDesignError(
-    "Property $field on ${klass.name} is not modifiable.",
-    "Your submission has a misconfigured property.",
-)
+class SubmissionDesignKotlinNotModifiableError(klass: Class<*>, field: String) :
+    SubmissionDesignError(
+        "Property $field on ${klass.name} is not modifiable.",
+        "Your submission has a misconfigured property.",
+    )
 
-class SubmissionDesignKotlinIsAccessibleError(klass: Class<*>, field: String) : SubmissionDesignError(
-    "Property $field on ${klass.name} is accessible but should not be.",
-    "Your submission has a extra unnecessary property.",
-)
+class SubmissionDesignKotlinIsAccessibleError(klass: Class<*>, field: String) :
+    SubmissionDesignError(
+        "Property $field on ${klass.name} is accessible but should not be.",
+        "Your submission has a extra unnecessary property.",
+    )
 
-class SubmissionDesignKotlinIsModifiableError(klass: Class<*>, field: String) : SubmissionDesignError(
-    "Property $field on ${klass.name} is modifiable but should not be.",
-    "Your submission has a misconfigured property.",
-)
+class SubmissionDesignKotlinIsModifiableError(klass: Class<*>, field: String) :
+    SubmissionDesignError(
+        "Property $field on ${klass.name} is modifiable but should not be.",
+        "Your submission has a misconfigured property.",
+    )
 
-class SubmissionDesignExtraMethodError(klass: Class<*>, executable: Executable) : SubmissionDesignError(
-    "${klass.name} provided extra ${
-        if (executable.isStatic() && !klass.isKotlin()) {
-            "static "
-        } else {
-            ""
-        }
-    }${
-        if (executable is Method) {
-            "method"
-        } else {
-            "constructor"
-        }
-    } ${executable.fullName(klass.isKotlin())}.",
-    "Your submission provides an extra method.",
-)
+class SubmissionDesignExtraMethodError(klass: Class<*>, executable: Executable) :
+    SubmissionDesignError(
+        "${klass.name} provided extra ${
+            if (executable.isStatic() && !klass.isKotlin()) {
+                "static "
+            } else {
+                ""
+            }
+        }${
+            if (executable is Method) {
+                "method"
+            } else {
+                "constructor"
+            }
+        } ${executable.fullName(klass.isKotlin())}.",
+        "Your submission provides an extra method.",
+    )
 
-class SubmissionDesignExtraInnerClassError(klass: Class<*>, innerKlass: Class<*>) : SubmissionDesignError(
-    "${klass.name} provided extra inner class ${innerKlass.name}.",
-    "Your submission provides an extra inner class.",
-)
+class SubmissionDesignExtraInnerClassError(klass: Class<*>, innerKlass: Class<*>) :
+    SubmissionDesignError(
+        "${klass.name} provided extra inner class ${innerKlass.name}.",
+        "Your submission provides an extra inner class.",
+    )
 
-class SubmissionDesignInheritanceError(klass: Class<*>, parent: Class<*>) : SubmissionDesignError(
-    "${klass.name} doesn't inherit from ${parent.name}.",
-)
+class SubmissionDesignInheritanceError(klass: Class<*>, parent: Class<*>) :
+    SubmissionDesignError(
+        "${klass.name} doesn't inherit from ${parent.name}.",
+    )
 
-class SubmissionTypeParameterError(klass: Class<*>, innerClass: Boolean = false) : SubmissionDesignError(
-    "${
-        if (innerClass) {
-            "Inner class "
-        } else {
-            ""
-        }
-    }${klass.name} has missing, unnecessary, or incorrectly-bounded type parameters.",
-)
+class SubmissionTypeParameterError(klass: Class<*>, innerClass: Boolean = false) :
+    SubmissionDesignError(
+        "${
+            if (innerClass) {
+                "Inner class "
+            } else {
+                ""
+            }
+        }${klass.name} has missing, unnecessary, or incorrectly-bounded type parameters.",
+    )
 
-class SubmissionDesignMissingFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
-    "Field ${field.fullName()} is not accessible in ${klass.name} but should be.",
-    "Your submission has a missing field.",
-)
+class SubmissionDesignMissingFieldError(klass: Class<*>, field: Field) :
+    SubmissionDesignError(
+        "Field ${field.fullName()} is not accessible in ${klass.name} but should be.",
+        "Your submission has a missing field.",
+    )
 
-class SubmissionDesignExtraFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
-    "Field ${field.fullName()} is accessible in ${klass.name} but should not be.",
-    "Your submission has a misconfigured field",
-)
+class SubmissionDesignExtraFieldError(klass: Class<*>, field: Field) :
+    SubmissionDesignError(
+        "Field ${field.fullName()} is accessible in ${klass.name} but should not be.",
+        "Your submission has a misconfigured field",
+    )
 
-class SubmissionStaticFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
-    "Field ${field.fullName()} is static in ${klass.name}, " +
-        "but static fields are not permitted for this problem.",
-    "Your submission has an incorrect static field.",
-)
+class SubmissionStaticFieldError(klass: Class<*>, field: Field) :
+    SubmissionDesignError(
+        "Field ${field.fullName()} is static in ${klass.name}, " +
+            "but static fields are not permitted for this problem.",
+        "Your submission has an incorrect static field.",
+    )
 
-class SubmissionStaticPublicFieldError(klass: Class<*>, field: Field) : SubmissionDesignError(
-    "Static field ${field.fullName()} in ${klass.name} must be private.",
-    "Your submission has a misconfigured static field.",
-)
+class SubmissionStaticPublicFieldError(klass: Class<*>, field: Field) :
+    SubmissionDesignError(
+        "Static field ${field.fullName()} in ${klass.name} must be private.",
+        "Your submission has a misconfigured static field.",
+    )
 
 class SubmissionDesignClassError(klass: Class<*>, message: String, innerClass: Boolean = false) :
     SubmissionDesignError(
@@ -885,14 +899,16 @@ class SubmissionDesignClassError(klass: Class<*>, message: String, innerClass: B
         "Your submission class is designed incorrectly.",
     )
 
-class DesignOnlyTestingError(klass: Class<*>) : Exception(
-    "Solution class ${klass.name} is marked as design only.",
-)
+class DesignOnlyTestingError(klass: Class<*>) :
+    Exception(
+        "Solution class ${klass.name} is marked as design only.",
+    )
 
-class KotlinBadSetterOrGetter(property: String, bad: String) : SubmissionDesignError(
-    "Kotlin class should declare a property $property and not manually implement $bad",
-    "Your submission provides an unnecessary Java-style getter or setter.",
-)
+class KotlinBadSetterOrGetter(property: String, bad: String) :
+    SubmissionDesignError(
+        "Kotlin class should declare a property $property and not manually implement $bad",
+        "Your submission provides an unnecessary Java-style getter or setter.",
+    )
 
 @Suppress("SwallowedException")
 fun unwrap(run: () -> Any?): Any? = try {
@@ -903,7 +919,10 @@ fun unwrap(run: () -> Any?): Any? = try {
 
 fun Class<*>.isKotlin() = getAnnotation(Metadata::class.java) != null
 
-class FollowTraceException(index: Int) : RuntimeException("Random generator out of sync at index $index")
+class FollowTraceException(index: Int, message: String) :
+    RuntimeException(
+        "Random generator out of sync at index $index: $message",
+    )
 
 @Suppress("MagicNumber")
 fun Executable.looksLikeGetter() =

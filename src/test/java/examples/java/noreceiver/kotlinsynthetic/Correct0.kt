@@ -5,6 +5,4 @@ fun addOne(value: Int): Int {
     return transform(value)
 }
 
-private fun plus1(x: Int): Int {
-    return x + 1
-}
+private fun plus1(x: Int): Int = x + 1

@@ -1,5 +1,3 @@
 package examples.java.noreceiver.kotlinparameterizedlist
 
-fun listSize(values: List<Item>): Int {
-    return values.size
-}
+fun listSize(values: List<Item>): Int = values.size

@@ -34,22 +34,23 @@ fun TypeVariable<*>.matches(klass: Class<*>) = bounds.map { bound ->
 }
 
 class Testing
-class TestBoundChecks : StringSpec({
-    "should check bounds" {
-        TestBoundsA::class.java.typeParameters.first().also { classTypeParameter ->
-            classTypeParameter.matches(Any::class.java) shouldBe true
-            classTypeParameter.matches(String::class.java) shouldBe true
-            classTypeParameter.matches(Testing::class.java) shouldBe true
+class TestBoundChecks :
+    StringSpec({
+        "should check bounds" {
+            TestBoundsA::class.java.typeParameters.first().also { classTypeParameter ->
+                classTypeParameter.matches(Any::class.java) shouldBe true
+                classTypeParameter.matches(String::class.java) shouldBe true
+                classTypeParameter.matches(Testing::class.java) shouldBe true
+            }
+            TestBoundsB::class.java.typeParameters.first().also { classTypeParameter ->
+                classTypeParameter.matches(Any::class.java) shouldBe false
+                classTypeParameter.matches(String::class.java) shouldBe true
+                classTypeParameter.matches(Testing::class.java) shouldBe false
+            }
+            TestBoundsC::class.java.typeParameters.first().also { classTypeParameter ->
+                classTypeParameter.matches(Any::class.java) shouldBe false
+                classTypeParameter.matches(String::class.java) shouldBe false
+                classTypeParameter.matches(Integer::class.java) shouldBe true
+            }
         }
-        TestBoundsB::class.java.typeParameters.first().also { classTypeParameter ->
-            classTypeParameter.matches(Any::class.java) shouldBe false
-            classTypeParameter.matches(String::class.java) shouldBe true
-            classTypeParameter.matches(Testing::class.java) shouldBe false
-        }
-        TestBoundsC::class.java.typeParameters.first().also { classTypeParameter ->
-            classTypeParameter.matches(Any::class.java) shouldBe false
-            classTypeParameter.matches(String::class.java) shouldBe false
-            classTypeParameter.matches(Integer::class.java) shouldBe true
-        }
-    }
-})
+    })
