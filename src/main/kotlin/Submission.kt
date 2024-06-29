@@ -423,28 +423,6 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         }
     }
 
-    @Suppress("UNCHECKED_CAST", "LongParameterList", "MemberVisibilityCanBePrivate")
-    fun List<TestRunner>.toResults(
-        settings: Settings,
-        recordingRandom: RecordingRandom,
-        stepCount: Int,
-        completed: Boolean = false,
-        threw: Throwable? = null,
-        timeout: Boolean = false,
-        finishedReceivers: Boolean = true,
-    ) = TestResults(
-        map { it.testResults as List<TestResult<Any, ParameterGroup>> }.flatten().sortedBy { it.stepCount },
-        settings,
-        completed,
-        threw,
-        timeout,
-        finishedReceivers,
-        count { !it.tested },
-        stepCount = stepCount,
-        skippedSteps = map { it.skippedTests }.flatten().sorted(),
-        randomTrace = recordingRandom.finish(),
-    )
-
     inner class ExecutablePicker(private val random: Random, private val methods: Set<Executable>) {
         private val counts: MutableMap<Executable, Int> = methods.filter {
             it in solution.limits.keys
@@ -536,7 +514,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         passedSettings: Settings = Settings(),
         captureOutputControlInput: CaptureOutputControlInput = ::defaultCaptureOutputControlInput,
         followTrace: List<Int>? = null,
-        testingEventListener: TestingEventListener? = null,
+        testingEventListener: TestingEventListener = {},
     ): TestResults {
         if (solution.solution.isDesignOnly() || solution.solution.isAbstract()) {
             throw DesignOnlyTestingError(solution.solution)
@@ -587,11 +565,33 @@ class Submission(val solution: Solution, val submission: Class<*>) {
 
         val generators = solution.generatorFactory.get(random, cloner, generatorOverrides)
 
+        fun List<TestRunner>.createdCount() =
+            count { it.created && (solution.skipReceiver || it.receivers?.solution != null) }
+
+        val neededReceivers = settings.receiverCount.coerceAtLeast(1)
+        var loopCount = 0
+
+        @Suppress("UNCHECKED_CAST", "LongParameterList", "MemberVisibilityCanBePrivate")
+        fun List<TestRunner>.toResults(
+            completed: Boolean = false,
+            threw: Throwable? = null,
+            timeout: Boolean = false,
+        ) = TestResults(
+            map { it.testResults as List<TestResult<Any, ParameterGroup>> }.flatten().sortedBy { it.stepCount },
+            settings,
+            completed,
+            threw,
+            timeout,
+            runners.createdCount() >= neededReceivers,
+            count { !it.tested },
+            stepCount = stepCount,
+            skippedSteps = map { it.skippedTests }.flatten().sorted(),
+            loopCount = loopCount,
+            randomTrace = random.finish(),
+        )
+
         @Suppress("TooGenericExceptionCaught")
         try {
-            fun List<TestRunner>.createdCount() =
-                count { it.created && (solution.skipReceiver || it.receivers?.solution != null) }
-
             fun addRunner(generators: Generators, receivers: Value<Any?>? = null) = TestRunner(
                 runners.size,
                 this@Submission,
@@ -603,7 +603,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 runners,
                 receivers,
                 random,
-                testingEventListener ?: {},
+                testingEventListener,
             ).also { runner ->
                 if (receivers == null && !solution.skipReceiver) {
                     runner.next(stepCount++)
@@ -618,8 +618,6 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     currentRunner = it
                 }
             }
-
-            val neededReceivers = settings.receiverCount.coerceAtLeast(1)
 
             var totalCount = 0
             var receiverStepCount = 0
@@ -641,16 +639,12 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             }
 
             while (totalCount < settings.testCount) {
+                testingEventListener(StartLoop(loopCount++))
+
                 val finishedReceivers = runners.createdCount() >= neededReceivers
 
                 if (Thread.interrupted()) {
-                    return runners.toResults(
-                        settings,
-                        random,
-                        timeout = true,
-                        finishedReceivers = finishedReceivers,
-                        stepCount = stepCount,
-                    )
+                    return runners.toResults(timeout = true)
                 }
 
                 val readyLeft =
@@ -683,12 +677,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                             if ((!settings.shrink!! || it.lastComplexity!!.level <= Complexity.MIN) &&
                                 !settings.runAll
                             ) {
-                                return runners.toResults(
-                                    settings,
-                                    random,
-                                    finishedReceivers = finishedReceivers,
-                                    stepCount = stepCount,
-                                )
+                                return runners.toResults()
                             }
                         }
                         if (!solution.receiverAsParameter || currentRunner == null) {
@@ -715,12 +704,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     if ((!settings.shrink!! || currentRunner!!.lastComplexity!!.level <= Complexity.MIN) &&
                         !settings.runAll
                     ) {
-                        return runners.toResults(
-                            settings,
-                            random,
-                            finishedReceivers = finishedReceivers,
-                            stepCount = stepCount,
-                        )
+                        return runners.toResults()
                     }
                 }
                 if (currentRunner!!.returnedReceivers != null) {
@@ -738,25 +722,14 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     nextRunner(false)
                 }
             }
-            return runners.toResults(
-                settings,
-                random,
-                completed = true,
-                finishedReceivers = runners.createdCount() >= neededReceivers,
-                stepCount = stepCount,
-            )
+            return runners.toResults(completed = true)
         } catch (e: FollowTraceException) {
             throw e
         } catch (e: Throwable) {
             if (settings.testing!!) {
                 throw e
             }
-            return runners.toResults(
-                settings,
-                random,
-                threw = e,
-                stepCount = stepCount,
-            )
+            return runners.toResults(threw = e)
         }
     }
 }

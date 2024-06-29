@@ -8,3 +8,4 @@ sealed class TestingEvent
 
 class StartTest(val stepCount: Int) : TestingEvent()
 class EndTest(val stepCount: Int) : TestingEvent()
+class StartLoop(val loopCount: Int) : TestingEvent()

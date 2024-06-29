@@ -300,6 +300,7 @@ class TestResults(
     designOnly: Boolean? = null,
     val skippedSteps: List<Int>,
     val stepCount: Int,
+    val loopCount: Int,
     val randomTrace: List<Int>? = null,
 ) : List<TestResult<Any, ParameterGroup>> by results {
     val succeeded = designOnly ?: finishedReceivers && all { it.succeeded } && completed
