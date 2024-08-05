@@ -5,14 +5,14 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2024.6.2"
+version = "2024.8.0"
 
 plugins {
     kotlin("jvm") version "2.0.0"
     java
     `maven-publish`
     signing
-    id("org.jmailen.kotlinter") version "4.4.0"
+    id("org.jmailen.kotlinter") version "4.4.1"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
     id("com.github.ben-manes.versions") version "0.51.0"
