@@ -5,10 +5,10 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2024.8.0"
+version = "2024.9.0"
 
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.20"
     java
     `maven-publish`
     signing
@@ -16,17 +16,17 @@ plugins {
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
     id("com.github.ben-manes.versions") version "0.51.0"
-    id("io.gitlab.arturbosch.detekt") version "1.23.6"
+    id("io.gitlab.arturbosch.detekt") version "1.23.7"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
-    implementation("io.github.classgraph:classgraph:4.8.174")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.20")
+    implementation("io.github.classgraph:classgraph:4.8.176")
     implementation("design.aem:cloning:1.11.1")
     implementation("com.google.jimfs:jimfs:1.3.0")
 
     testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
-    testImplementation("org.slf4j:slf4j-simple:2.0.13")
+    testImplementation("org.slf4j:slf4j-simple:2.0.16")
 }
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
