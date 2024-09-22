@@ -86,6 +86,8 @@ internal fun <P : ParameterGroup> Executable.formatBoundMethodCall(parameterValu
         ")"
 }
 
+private fun String.hasUnprintableCharacter() = this.any { char -> char < 32.toChar() }
+
 @Suppress("unused")
 data class TestResult<T, P : ParameterGroup>(
     @JvmField val runnerID: Int,
@@ -175,7 +177,13 @@ Solution printed:
 ${solution.stdout}---
 Submission printed:
 ---
-${submission.stdout}---""".trim()
+${submission.stdout}---${
+                    if (submission.stdout.hasUnprintableCharacter()) {
+                        " (contains unprintable characters)"
+                    } else {
+                        ""
+                    }
+                }""".trim()
             }
 
             differs.contains(Differs.STDERR) -> {
@@ -185,7 +193,13 @@ Solution printed to STDERR:
 ${solution.stderr}---
 Submission printed to STDERR:
 ---
-${submission.stderr}---""".trim()
+${submission.stderr}---${
+                    if (submission.stderr.hasUnprintableCharacter()) {
+                        " (contains unprintable characters)"
+                    } else {
+                        ""
+                    }
+                }""".trim()
             }
 
             differs.contains(Differs.INTERLEAVED_OUTPUT) -> {
@@ -195,7 +209,13 @@ Combined solution input and output:
 ${solution.interleavedOutput}---
 Combined submission input and output:
 ---
-${submission.interleavedOutput}---""".trim()
+${submission.interleavedOutput}---${
+                    if (submission.interleavedOutput.hasUnprintableCharacter()) {
+                        " (contains unprintable characters)"
+                    } else {
+                        ""
+                    }
+                }""".trim()
             }
 
             differs.contains(Differs.RETURN) -> {
