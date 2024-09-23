@@ -86,7 +86,7 @@ internal fun <P : ParameterGroup> Executable.formatBoundMethodCall(parameterValu
         ")"
 }
 
-private fun String.hasUnprintableCharacter() = this.any { char -> char < 32.toChar() }
+private fun String.hasUnprintableCharacter() = this.any { char -> !char.isWhitespace() && char < 32.toChar() }
 
 @Suppress("unused")
 data class TestResult<T, P : ParameterGroup>(
@@ -174,14 +174,14 @@ data class TestResult<T, P : ParameterGroup>(
                 """
 Solution printed:
 ---
-${solution.stdout}---
+${solution.stdout}--- (length ${solution.stdout.length})
 Submission printed:
 ---
-${submission.stdout}---${
+${submission.stdout}--- ${
                     if (submission.stdout.hasUnprintableCharacter()) {
-                        " (contains unprintable characters)"
+                        "(length ${submission.stdout.length}, contains unprintable characters)"
                     } else {
-                        ""
+                        "(length ${submission.stdout.length})"
                     }
                 }""".trim()
             }
@@ -190,14 +190,14 @@ ${submission.stdout}---${
                 """
 Solution printed to STDERR:
 ---
-${solution.stderr}---
+${solution.stderr}--- (length ${solution.stderr.length})
 Submission printed to STDERR:
 ---
-${submission.stderr}---${
+${submission.stderr}--- ${
                     if (submission.stderr.hasUnprintableCharacter()) {
-                        " (contains unprintable characters)"
+                        "(length ${submission.stderr.length}, contains unprintable characters)"
                     } else {
-                        ""
+                        "(length ${submission.stderr.length})"
                     }
                 }""".trim()
             }
@@ -206,14 +206,14 @@ ${submission.stderr}---${
                 """
 Combined solution input and output:
 ---
-${solution.interleavedOutput}---
+${solution.interleavedOutput}--- (length ${solution.interleavedOutput.length})
 Combined submission input and output:
 ---
-${submission.interleavedOutput}---${
+${submission.interleavedOutput}--- ${
                     if (submission.interleavedOutput.hasUnprintableCharacter()) {
-                        " (contains unprintable characters)"
+                        "(length ${submission.interleavedOutput.length}, contains unprintable characters)"
                     } else {
-                        ""
+                        "(length ${submission.interleavedOutput.length})"
                     }
                 }""".trim()
             }

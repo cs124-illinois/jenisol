@@ -331,6 +331,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
         if (!compare(solution.threw, submission.threw, result.solutionClass, result.submissionClass)) {
             result.differs.add(TestResult.Differs.THREW)
         }
+
         if ((strictOutput || solution.stdout.isNotBlank()) && solution.stdout != submission.stdout) {
             result.differs.add(TestResult.Differs.STDOUT)
             if (solution.stdout == submission.stdout + "\n") {
@@ -348,6 +349,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 }
             }
         }
+
         if ((strictOutput || solution.stderr.isNotBlank()) && solution.stderr != submission.stderr) {
             result.differs.add(TestResult.Differs.STDERR)
             if (solution.stderr == submission.stderr + "\n") {
@@ -359,6 +361,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                     "Error output has an extra newline, maybe use System.err.print instead of System.err.println?"
             }
         }
+
         @Suppress("ComplexCondition")
         if ((strictOutput || solution.stdout.isNotBlank() || solution.stderr.isNotBlank()) &&
             solution.interleavedOutput != submission.interleavedOutput
