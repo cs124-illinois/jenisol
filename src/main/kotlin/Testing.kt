@@ -173,11 +173,11 @@ data class TestResult<T, P : ParameterGroup>(
             differs.contains(Differs.STDOUT) -> {
                 """
 Solution printed:
----
-${solution.stdout}--- (length ${solution.stdout.length})
+-->
+${solution.stdout}<-- (length ${solution.stdout.length})
 Submission printed:
----
-${submission.stdout}--- ${
+-->
+${submission.stdout}<-- ${
                     if (submission.stdout.hasUnprintableCharacter()) {
                         "(length ${submission.stdout.length}, contains unprintable characters)"
                     } else {
@@ -189,11 +189,11 @@ ${submission.stdout}--- ${
             differs.contains(Differs.STDERR) -> {
                 """
 Solution printed to STDERR:
----
-${solution.stderr}--- (length ${solution.stderr.length})
+-->
+${solution.stderr}<-- (length ${solution.stderr.length})
 Submission printed to STDERR:
----
-${submission.stderr}--- ${
+-->
+${submission.stderr}<-- ${
                     if (submission.stderr.hasUnprintableCharacter()) {
                         "(length ${submission.stderr.length}, contains unprintable characters)"
                     } else {
@@ -205,11 +205,11 @@ ${submission.stderr}--- ${
             differs.contains(Differs.INTERLEAVED_OUTPUT) -> {
                 """
 Combined solution input and output:
----
-${solution.interleavedOutput}--- (length ${solution.interleavedOutput.length})
+-->
+${solution.interleavedOutput}<-- (length ${solution.interleavedOutput.length})
 Combined submission input and output:
----
-${submission.interleavedOutput}--- ${
+-->
+${submission.interleavedOutput}<-- ${
                     if (submission.interleavedOutput.hasUnprintableCharacter()) {
                         "(length ${submission.interleavedOutput.length}, contains unprintable characters)"
                     } else {
