@@ -752,7 +752,7 @@ class SubmissionDesignMissingMethodError(klass: Class<*>, executable: Executable
                     if (executable.isStatic()) {
                         "class "
                     } else {
-                        ""
+                        " "
                     }
                 }method"""
             } else {

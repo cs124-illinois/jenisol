@@ -5,10 +5,10 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2024.9.1"
+version = "2024.10.0"
 
 plugins {
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.0.21"
     java
     `maven-publish`
     signing
@@ -21,7 +21,7 @@ plugins {
 }
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.20")
-    implementation("io.github.classgraph:classgraph:4.8.176")
+    implementation("io.github.classgraph:classgraph:4.8.177")
     implementation("design.aem:cloning:1.11.1")
     implementation("com.google.jimfs:jimfs:1.3.0")
 
