@@ -167,7 +167,7 @@ class Comparators(private val comparators: MutableMap<Class<*>, Comparator> = mu
                 else -> false
             }
         }
-        comparators[java.util.stream.Stream::class.java] = object : Comparator {
+        comparators[Stream::class.java] = object : Comparator {
             override val descendants = false
             override val isInterface = true
 
@@ -197,7 +197,7 @@ class Comparators(private val comparators: MutableMap<Class<*>, Comparator> = mu
         var current: Class<*>? = klass
         while (current != null) {
             if (current.name == "java.util.stream.AbstractPipeline") {
-                return java.util.stream.Stream::class.java
+                return Stream::class.java
             }
             if (comparators[current]?.descendants == true) {
                 return current

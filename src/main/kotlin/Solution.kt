@@ -80,8 +80,6 @@ class Solution(val solution: Class<*>) {
                                 executable.returnType.getArrayDimension() == 1
                             )
                     )
-
-            else -> designError("Unexpected executable type")
         }
     }.toSet()
     val methodsToTest = (allExecutables - receiverGenerators + bothExecutables).also {
@@ -229,7 +227,7 @@ class Solution(val solution: Class<*>) {
             check(it in (allExecutables + bothExecutables)) {
                 "Can only use @Limit on tested methods and constructors and methods annotated with @Both"
             }
-            it.getAnnotation(Limit::class.java).value
+            it.getAnnotation(Limit::class.java)!!.value
         }
 
     private val methodLimit = if (limits.keys == methodsToTest) {
@@ -301,13 +299,12 @@ class Solution(val solution: Class<*>) {
             val returnType = when (methodToTest) {
                 is Constructor<*> -> solution
                 is Method -> methodToTest.genericReturnType
-                else -> designError("Unexpected executable type")
             }
             @Suppress("TooGenericExceptionCaught", "SwallowedException")
             try {
                 Verify.validate(verifier, returnType, methodToTest.genericParameterTypes)
                 true
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 false
             }
         }
@@ -421,14 +418,14 @@ fun Executable.isDataClassGenerated() = name == "equals" ||
 @Suppress("SwallowedException")
 fun Class<*>.hasKotlinCompanion() = try {
     isKotlin() && kotlin.companionObject != null
-} catch (e: UnsupportedOperationException) {
+} catch (_: UnsupportedOperationException) {
     false
 }
 
 @Suppress("SwallowedException")
 fun Executable.isKotlinCompanion() = try {
     declaringClass.isKotlin() && declaringClass.kotlin.isCompanion
-} catch (e: UnsupportedOperationException) {
+} catch (_: UnsupportedOperationException) {
     false
 }
 
@@ -482,7 +479,6 @@ fun Executable.fullName(isKotlin: Boolean = false): String {
     val returnType = when (this) {
         is Constructor<*> -> ""
         is Method -> genericReturnType.cleanTypeName(isKotlin)
-        else -> error("Unknown executable type")
     }.let { type ->
         if (isKotlin) {
             type.toKotlinType()

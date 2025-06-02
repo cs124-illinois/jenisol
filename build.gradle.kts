@@ -5,14 +5,14 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "org.cs124"
-version = "2025.4.0"
+version = "2025.6.0"
 
 plugins {
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version "2.1.21"
     java
     `maven-publish`
     signing
-    id("org.jmailen.kotlinter") version "5.0.1"
+    id("org.jmailen.kotlinter") version "5.1.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
     id("com.github.ben-manes.versions") version "0.52.0"
@@ -20,7 +20,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.20")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.21")
     implementation("io.github.classgraph:classgraph:4.8.179")
     implementation("design.aem:cloning:1.12.1")
     implementation("com.google.jimfs:jimfs:1.3.0")

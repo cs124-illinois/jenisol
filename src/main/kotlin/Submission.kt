@@ -104,7 +104,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 if (!submission.typeParameters[i].bounds.contentEquals(type.bounds)) {
                     throw SubmissionTypeParameterError(submission, innerClass)
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 throw SubmissionTypeParameterError(submission, innerClass)
             }
         }
@@ -164,7 +164,6 @@ class Submission(val solution: Solution, val submission: Class<*>) {
             when (solutionExecutable) {
                 is Constructor<*> -> submission.findConstructor(solutionExecutable, solution.solution)
                 is Method -> submission.findMethod(solutionExecutable, solution.solution)
-                else -> error("Encountered unexpected executable type: $solutionExecutable")
             }?.let { executable ->
                 executable.isAccessible = true
                 solutionExecutable to executable
@@ -194,7 +193,7 @@ class Submission(val solution: Solution, val submission: Class<*>) {
                 try {
                     submission.kotlin.memberFunctions
                     true
-                } catch (e: UnsupportedOperationException) {
+                } catch (_: UnsupportedOperationException) {
                     false
                 }
 

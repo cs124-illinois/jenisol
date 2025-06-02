@@ -308,7 +308,7 @@ fun print(value: Any?): String = when {
     else -> value.safePrint()
 }
 
-@Suppress("UNUSED", "LongParameterList")
+@Suppress("UNUSED", "LongParameterList", "JavaDefaultMethodsNotOverriddenByDelegation")
 class TestResults(
     val results: List<TestResult<Any, ParameterGroup>>,
     val settings: Settings,
@@ -467,7 +467,6 @@ class TestRunner(
                 when (this@pairRun) {
                     is Method -> this@pairRun.invoke(receiver, *parameters)
                     is Constructor<*> -> this@pairRun.newInstance(*parameters)
-                    else -> error("Unknown executable type")
                 }
             }
         }.let {
@@ -643,7 +642,6 @@ class TestRunner(
             when (solutionExecutable) {
                 is Constructor<*> -> TestResult.Type.CONSTRUCTOR
                 is Method -> TestResult.Type.FACTORY_METHOD
-                else -> error("Unexpected executable type")
             }
         } else {
             check(receivers != null) { "No receivers available" }
@@ -659,8 +657,6 @@ class TestRunner(
                         false -> TestResult.Type.METHOD
                     }
                 }
-
-                else -> error("Unexpected executable type")
             }
         }
 
@@ -685,9 +681,9 @@ class TestRunner(
             unwrap {
                 submission.solution.filters[solutionExecutable]?.invoke(null, *parameters.solution)
             }
-        } catch (e: SkipTest) {
+        } catch (_: SkipTest) {
             return
-        } catch (e: BoundComplexity) {
+        } catch (_: BoundComplexity) {
             generator?.prev()
             return
         } catch (e: TestingControlException) {
@@ -864,7 +860,7 @@ class SkipTest : TestingControlException()
 class BoundComplexity : TestingControlException()
 
 private val hashCodeRegex = Regex("@[0-9a-fA-F]+$")
-private val lambdaRegex = Regex("""\${"$"}\${"$"}Lambda[^\s)]+""")
+private val lambdaRegex = Regex("""\$\${"$"}Lambda[^\s)]+""")
 
 @Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
 fun TestResults.solutionTestingSequence(): List<String> {
@@ -921,7 +917,7 @@ fun TestResults.solutionTestingSequence(): List<String> {
         for ((to, from) in outputRemaps) {
             fullString = fullString.replace(to, from)
         }
-        fullString = fullString.replace(lambdaRegex, "\\${"$"}\\${"$"}Lambda")
+        fullString = fullString.replace(lambdaRegex, "\\$\\${"$"}Lambda")
         fullString = fullString.replace(result.solutionClass.name, result.solutionClass.simpleName)
         fullString
     }
