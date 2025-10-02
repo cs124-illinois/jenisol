@@ -48,6 +48,9 @@ class TestJavaExamples :
             examples.java.noreceiver.onerandomparameter.Correct::class.java.also {
                 "${it.testName()}" { it.test() }
             }
+            examples.java.noreceiver.multiplemethodssharedparameters.Correct::class.java.also {
+                "${it.testName()}" { it.test() }
+            }
             examples.java.noreceiver.onegeneratedparameter.Correct::class.java.also {
                 "${it.testName()}" { it.test() }
             }
