@@ -8,24 +8,24 @@ group = "org.cs124"
 version = "2025.10.0"
 
 plugins {
-    kotlin("jvm") version "2.1.21"
+    kotlin("jvm") version "2.2.20"
     java
     `maven-publish`
     signing
-    id("org.jmailen.kotlinter") version "5.1.0"
+    id("org.jmailen.kotlinter") version "5.2.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
-    id("com.github.ben-manes.versions") version "0.52.0"
+    id("com.github.ben-manes.versions") version "0.53.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.21")
-    implementation("io.github.classgraph:classgraph:4.8.179")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.20")
+    implementation("io.github.classgraph:classgraph:4.8.181")
     implementation("design.aem:cloning:1.12.1")
-    implementation("com.google.jimfs:jimfs:1.3.0")
+    implementation("com.google.jimfs:jimfs:1.3.1")
 
-    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+    testImplementation("io.kotest:kotest-runner-junit5:6.0.3")
     testImplementation("org.slf4j:slf4j-simple:2.0.17")
 }
 tasks.withType<JavaCompile> {
