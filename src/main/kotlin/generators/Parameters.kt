@@ -485,15 +485,33 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
             .filter { field -> field.isFixedParameters() }
             .filter { field ->
                 FixedParameters.validate(field, solution).compareBoxed(parameterTypes)
-            }.filter { field ->
-                field.getFixedFieldParametersName().let {
-                    if (it.isNotBlank()) {
-                        it == "*" || target.name == it
-                    } else {
-                        true
+            }
+            .let { allMatching ->
+                // Get all specific name matches (non-blank, non-"*")
+                val specificNameMatches = allMatching
+                    .filter { field ->
+                        field.getFixedFieldParametersName().let { name ->
+                            name.isNotBlank() && name != "*"
+                        }
+                    }
+                    .map { it.getFixedFieldParametersName() }
+                    .toSet()
+
+                // Check if this method has a specific name match
+                val hasSpecificMatch = target.name in specificNameMatches
+
+                // Filter based on whether this is a wildcard or specific match
+                return@let allMatching.filter { field ->
+                    field.getFixedFieldParametersName().let { name ->
+                        when {
+                            name.isBlank() -> true // Empty string matches by type only
+                            name == "*" -> !hasSpecificMatch // Wildcard excludes methods with specific matches
+                            else -> target.name == name // Specific name must match exactly
+                        }
                     }
                 }
-            }.also {
+            }
+            .also {
                 check(it.size <= 1) {
                     "Multiple @${FixedParameters.name} annotations match method ${target.name}"
                 }
@@ -531,12 +549,28 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
         randomParameters = solution.declaredMethods
             .filter { method -> method.isRandomParameters() }
             .filter { method -> RandomParameters.validate(method, solution).compareBoxed(parameterTypes) }
-            .filter { method ->
-                method.getRandomParametersMethodName().let {
-                    if (it.isNotBlank()) {
-                        it == "*" || target.name == it
-                    } else {
-                        true
+            .let { allMatching ->
+                // Get all specific name matches (non-blank, non-"*")
+                val specificNameMatches = allMatching
+                    .filter { method ->
+                        method.getRandomParametersMethodName().let { name ->
+                            name.isNotBlank() && name != "*"
+                        }
+                    }
+                    .map { it.getRandomParametersMethodName() }
+                    .toSet()
+
+                // Check if this method has a specific name match
+                val hasSpecificMatch = target.name in specificNameMatches
+
+                // Filter based on whether this is a wildcard or specific match
+                return@let allMatching.filter { method ->
+                    method.getRandomParametersMethodName().let { name ->
+                        when {
+                            name.isBlank() -> true // Empty string matches by type only
+                            name == "*" -> !hasSpecificMatch // Wildcard excludes methods with specific matches
+                            else -> target.name == name // Specific name must match exactly
+                        }
                     }
                 }
             }
