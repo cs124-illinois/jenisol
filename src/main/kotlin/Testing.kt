@@ -144,16 +144,16 @@ data class TestResult<T, P : ParameterGroup>(
         check(failed) { "Can't explain successful result" }
 
         val resultString = when {
-            verifierThrew != null -> "Verifier threw an exception: ${verifierThrew!!.message}"
+            verifierThrew != null -> "Verifier threw an exception: ${verifierThrew!!.safePrint()}"
             differs.contains(Differs.THREW) -> {
                 if (solution.threw == null) {
                     """Solution did not throw an exception"""
                 } else {
-                    """Solution threw: ${solution.threw}"""
+                    """Solution threw: ${solution.threw.safePrint()}"""
                 } + "\n" + if (submission.threw == null) {
                     """Submission did not throw an exception"""
                 } else {
-                    """Submission threw: ${submission.threw}""" + if (stacktrace) {
+                    """Submission threw: ${submission.threw.safePrint()}""" + if (stacktrace) {
                         "\n" + submission.threw.stackTraceToString().lines().let { lines ->
                             val trimIndex = lines.indexOfFirst { it.trim().startsWith("at java.base") }.let {
                                 if (it == -1) {
@@ -290,7 +290,7 @@ Submission modified its parameters to ${
         "solutionTimeNanos=$solutionTimeNanos, " +
         "submissionTimeNanos=$submissionTimeNanos, " +
         "parameters=$parameters, " +
-        "verifierThrew=$verifierThrew)"
+        "verifierThrew=${verifierThrew?.safePrint()})"
 }
 
 fun print(value: Any?): String = when {
