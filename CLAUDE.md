@@ -24,6 +24,8 @@ This is a Gradle/Kotlin project (build.gradle.kts). Java 17 required.
 - `./gradlew test` - Run test suite (uses Kotest)
 - `./gradlew clean` - Clean build artifacts
 
+**Important**: After making code changes, run `./gradlew check` or `./gradlew clean check` to lint and run all tests before committing.
+
 ### Code Quality
 - `./gradlew check` - Run all checks (includes linting and detekt)
 - `./gradlew formatKotlin` - Auto-format Kotlin code
