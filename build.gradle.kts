@@ -3,6 +3,7 @@ import java.io.File
 import java.io.StringWriter
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.plugins.signing.Sign
 
 group = "org.cs124"
 version = "2025.10.1"
@@ -137,7 +138,12 @@ nexusPublishing {
 }
 signing {
     setRequired {
-        gradle.taskGraph.allTasks.any { it is PublishToMavenRepository }
+        gradle.taskGraph.allTasks.any { it.name.contains("ToSonatype") }
     }
     sign(publishing.publications["jenisol"])
+}
+tasks.withType<Sign>().configureEach {
+    onlyIf {
+        gradle.taskGraph.allTasks.any { it.name.contains("ToSonatype") }
+    }
 }
