@@ -28,4 +28,16 @@ class TestHelpers :
             "byte[][]".toKotlinType() shouldBe "Array<ByteArray>"
             "byte[][][]".toKotlinType() shouldBe "Array<Array<ByteArray>>"
         }
+        "should safely print anonymous exceptions with custom toString" {
+            // Create an anonymous exception with a toString that would throw SecurityException
+            val exception = object : Exception("PlaceNotFound") {
+                @Suppress("ExceptionRaisedInUnexpectedLocation")
+                override fun toString(): String = throw SecurityException("Cannot call toString outside sandbox")
+            }
+
+            // safePrint should fall back to className: message format
+            // For anonymous classes, includes the full class name with message
+            val result = exception.safePrint()
+            result shouldBe $$"edu.illinois.cs.cs125.jenisol.core.TestHelpers$1$3$exception$1: PlaceNotFound"
+        }
     })

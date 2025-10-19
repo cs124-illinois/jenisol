@@ -672,7 +672,18 @@ private fun <T> Array<out T>.safeContentDeepToStringInternal(result: StringBuild
 fun Any.safePrint(): String = try {
     toString()
 } catch (_: Exception) {
-    this::class.simpleName ?: this.javaClass.packageName
+    when (this) {
+        is Throwable -> {
+            val className = this::class.simpleName ?: this.javaClass.name
+            val message = try {
+                this.message
+            } catch (_: Exception) {
+                null
+            }
+            if (message != null) "$className: $message" else className
+        }
+        else -> this::class.simpleName ?: this.javaClass.name
+    }
 }
 
 inline fun <reified T> T.deepCopy(cloner: Cloner): T = when {
