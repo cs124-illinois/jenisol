@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.plugins.signing.Sign
 
 group = "org.cs124"
-version = "2025.10.1"
+version = "2025.10.2"
 
 plugins {
     kotlin("jvm") version "2.2.20"
