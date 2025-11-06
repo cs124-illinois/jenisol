@@ -39,6 +39,12 @@ Use Kotest test filtering via command line or IDE integration.
 - `./gradlew publish` - Publish to Maven repository
 - Configured for Sonatype Maven Central (s01.oss.sonatype.org)
 
+### Dependency Updates
+- `./gradlew dependencyUpdates` - Check for available dependency updates
+- Uses the gradle-versions-plugin by Ben Manes
+- Generates a report showing current and latest versions
+- Only shows stable releases (filters out alpha, beta, RC versions)
+
 ## Architecture
 
 ### Core Components
