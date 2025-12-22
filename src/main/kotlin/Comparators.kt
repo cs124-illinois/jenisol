@@ -1,3 +1,5 @@
+@file:Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+
 package edu.illinois.cs.cs125.jenisol.core
 
 import edu.illinois.cs.cs125.jenisol.core.generators.boxArray
@@ -33,6 +35,7 @@ class Comparators(private val comparators: MutableMap<Class<*>, Comparator> = mu
                 @Suppress("MagicNumber")
                 when {
                     solution::class.java == submission::class.java -> true
+
                     solutionClass != null &&
                         submissionClass != null &&
                         solution is AssertionError &&
@@ -83,9 +86,13 @@ class Comparators(private val comparators: MutableMap<Class<*>, Comparator> = mu
                             """Index: (\d+), Size: (\d+)""".toRegex().matchEntire(submission.message!!)
                         when {
                             solutionMatch == null -> false
+
                             submissionMatch == null -> false
+
                             solutionMatch.groupValues.size != 3 -> false
+
                             submissionMatch.groupValues.size != 3 -> false
+
                             else -> {
                                 solutionMatch.groupValues[1].toInt() == submissionMatch.groupValues[1].toInt() &&
                                     solutionMatch.groupValues[2].toInt() == submissionMatch.groupValues[2].toInt()
@@ -107,9 +114,13 @@ class Comparators(private val comparators: MutableMap<Class<*>, Comparator> = mu
                             """Index: (\d+), Size: (\d+)""".toRegex().matchEntire(submission.message!!)
                         when {
                             solutionMatch == null -> false
+
                             submissionMatch == null -> false
+
                             solutionMatch.groupValues.size != 3 -> false
+
                             submissionMatch.groupValues.size != 3 -> false
+
                             else -> {
                                 solutionMatch.groupValues[1].toInt() == submissionMatch.groupValues[1].toInt() &&
                                     solutionMatch.groupValues[2].toInt() == submissionMatch.groupValues[2].toInt()
@@ -237,7 +248,9 @@ fun Any.deepEquals(
     submissionClass: Class<*>?,
 ): Boolean = when {
     this === submission -> true
+
     submission == null -> false
+
     this::class.java in comparators -> comparators[this::class.java].compare(
         this,
         submission,
@@ -251,6 +264,7 @@ fun Any.deepEquals(
     this == submission -> true
 
     this.isAnyArray() != submission.isAnyArray() -> false
+
     this.isAnyArray() && submission.isAnyArray() -> {
         val solutionBoxed = this.boxArray()
         val submissionBoxed = submission.boxArray()

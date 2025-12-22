@@ -1,4 +1,4 @@
-@file:Suppress("TooManyFunctions", "MemberVisibilityCanBePrivate")
+@file:Suppress("TooManyFunctions", "MemberVisibilityCanBePrivate", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 
 package edu.illinois.cs.cs125.jenisol.core
 
@@ -75,12 +75,14 @@ private fun validateTypeMethod(method: Method, name: String, returnsArray: Boole
             1 -> {
                 check(method.parameterTypes[0] == Random::class.java) { message }
             }
+
             2 -> {
                 check(
                     method.parameterTypes[0] == Int::class.java &&
                         method.parameterTypes[1] == Random::class.java,
                 ) { message }
             }
+
             else -> error(message)
         }
         method.returnType
@@ -140,12 +142,14 @@ annotation class RandomParameters(val value: String = "", val fastCopy: Boolean 
                 1 -> {
                     check(method.parameterTypes[0] == Random::class.java) { message }
                 }
+
                 2 -> {
                     check(
                         method.parameterTypes[0] == Int::class.java &&
                             method.parameterTypes[1] == Random::class.java,
                     ) { message }
                 }
+
                 else -> error(message)
             }
             method.isAccessible = true
@@ -576,7 +580,9 @@ class Four<I, J, K, L>(setFirst: I, setSecond: J, setThird: K, setFourth: L) : P
 
     override fun equals(other: Any?): Boolean = when {
         this === other -> true
+
         other !is Four<*, *, *, *> -> false
+
         else ->
             listOf(first, second, third, fourth)
                 .deepCompare(listOf(other.first, other.second, other.third, other.fourth))
@@ -682,6 +688,7 @@ fun Any.safePrint(): String = try {
             }
             if (message != null) "$className: $message" else className
         }
+
         else -> this::class.simpleName ?: this.javaClass.name
     }
 }

@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate")
+@file:Suppress("MemberVisibilityCanBePrivate", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 
 package edu.illinois.cs.cs125.jenisol.core.generators
 
@@ -49,6 +49,7 @@ data class Parameters(
     @Suppress("ExceptionRaisedInUnexpectedLocation")
     override fun equals(other: Any?) = when {
         this === other -> true
+
         other is Parameters ->
             @Suppress("TooGenericExceptionCaught")
             try {
@@ -504,8 +505,12 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
                 return@let allMatching.filter { field ->
                     field.getFixedFieldParametersName().let { name ->
                         when {
-                            name.isBlank() -> true // Empty string matches by type only
-                            name == "*" -> !hasSpecificMatch // Wildcard excludes methods with specific matches
+                            name.isBlank() -> true
+
+                            // Empty string matches by type only
+                            name == "*" -> !hasSpecificMatch
+
+                            // Wildcard excludes methods with specific matches
                             else -> target.name == name // Specific name must match exactly
                         }
                     }
@@ -567,8 +572,12 @@ class MethodParametersGeneratorGenerator(val target: Executable, val solution: C
                 return@let allMatching.filter { method ->
                     method.getRandomParametersMethodName().let { name ->
                         when {
-                            name.isBlank() -> true // Empty string matches by type only
-                            name == "*" -> !hasSpecificMatch // Wildcard excludes methods with specific matches
+                            name.isBlank() -> true
+
+                            // Empty string matches by type only
+                            name == "*" -> !hasSpecificMatch
+
+                            // Wildcard excludes methods with specific matches
                             else -> target.name == name // Specific name must match exactly
                         }
                     }

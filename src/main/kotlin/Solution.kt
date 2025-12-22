@@ -1,4 +1,4 @@
-@file:Suppress("TooManyFunctions")
+@file:Suppress("TooManyFunctions", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 
 package edu.illinois.cs.cs125.jenisol.core
 
@@ -39,7 +39,7 @@ class Solution(val solution: Class<*>) {
         (solution.declaredMethods.toSet() + solution.declaredConstructors.toSet())
             .filterNotNull()
             .filter {
-                ((!it.isPrivate() && !it.isJenisol() || it.isCheckDesign())) &&
+                ((!it.isPrivate() && !it.isJenisol()) || it.isCheckDesign()) &&
                     !it.isSynthetic &&
                     !(it is Method && it.isBridge)
             }.toSet().also {
@@ -71,6 +71,7 @@ class Solution(val solution: Class<*>) {
     }.filter { executable ->
         when (executable) {
             is Constructor<*> -> true
+
             is Method -> executable.isStatic() &&
                 (
                     executable.returnType == solution ||
@@ -432,15 +433,25 @@ fun Executable.isKotlinCompanion() = try {
 @Suppress("ComplexMethod", "NestedBlockDepth")
 fun String.toKotlinType() = when {
     this == "byte" -> "Byte"
+
     this == "short" -> "Short"
+
     this == "int" -> "Int"
+
     this == "long" -> "Long"
+
     this == "float" -> "Float"
+
     this == "double" -> "Double"
+
     this == "char" -> "Char"
+
     this == "boolean" -> "Boolean"
+
     this == "Integer" -> "Int"
+
     this == "Object" -> "Any"
+
     this.endsWith("[]") -> {
         var currentType = this
         var arrayCount = -1
@@ -608,7 +619,9 @@ fun Class<*>.findMethod(method: Method, solution: Class<*>) = this.declaredMetho
 
 fun compareReturn(solutionReturn: Type, solution: Class<*>, submissionReturn: Type, submission: Class<*>) = when {
     solutionReturn == submissionReturn -> true
+
     solutionReturn == solution && submissionReturn == submission -> true
+
     solutionReturn is Class<*> &&
         submissionReturn is Class<*> &&
         solutionReturn.isArray &&
@@ -638,6 +651,7 @@ fun compareParameters(
         .all { (solutionType, submissionType) ->
             when {
                 solutionType == submissionType -> true
+
                 solutionType !is ParameterizedType &&
                     submissionType is ParameterizedType &&
                     submissionType.rawType == solutionType -> {

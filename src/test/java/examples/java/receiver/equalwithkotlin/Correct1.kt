@@ -7,6 +7,7 @@ class Correct1(private val value: Int) {
             other as Correct1
             other.value == value
         }
+
         else -> false
     }
 }

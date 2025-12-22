@@ -1,3 +1,5 @@
+@file:Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+
 package edu.illinois.cs.cs125.jenisol.core
 
 import examples.boundchecktesting.TestBoundsA

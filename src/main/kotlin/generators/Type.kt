@@ -1,4 +1,4 @@
-@file:Suppress("MagicNumber", "TooManyFunctions")
+@file:Suppress("MagicNumber", "TooManyFunctions", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 
 package edu.illinois.cs.cs125.jenisol.core.generators
 
@@ -110,6 +110,7 @@ class OverrideTypeGenerator(
 
     private val simpleOverride: Set<Value<Any>>? = when {
         simpleValues != null -> simpleValues.values(ZeroComplexity, cloner)
+
         simpleMethod != null -> {
             val solution = simpleMethod.invoke(null) as kotlin.Array<*>
             check(solution.none { it == null }) {
@@ -171,6 +172,7 @@ class OverrideTypeGenerator(
 
     private val edgeOverride: Set<Value<Any?>>? = when {
         edgeValues != null -> edgeValues.values(ZeroComplexity, cloner)
+
         edgeMethod != null -> {
             val solution = edgeMethod.invoke(null) as kotlin.Array<*>
 
@@ -825,6 +827,7 @@ fun <T> Class<T>.getArrayDimension(start: Boolean = true): Int {
 
 fun kotlin.Array<Type>.compareBoxed(other: kotlin.Array<Type>) = when {
     size != other.size -> false
+
     else ->
         zip(other).all { (mine, other) ->
             when {

@@ -145,6 +145,7 @@ data class TestResult<T, P : ParameterGroup>(
 
         val resultString = when {
             verifierThrew != null -> "Verifier threw an exception: ${verifierThrew!!.safePrint()}"
+
             differs.contains(Differs.THREW) -> {
                 if (solution.threw == null) {
                     """Solution did not throw an exception"""
@@ -673,6 +674,7 @@ class TestRunner(
             }
 
             receivers != null -> receivers
+
             else -> Value(null, null, null, null, null, ZeroComplexity)
         } ?: error("Didn't set receivers")
 
