@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.plugins.signing.Sign
 
 group = "org.cs124"
-version = "2025.12.0"
+version = "2026.1.0"
 
 plugins {
     kotlin("jvm") version "2.3.0"
@@ -19,6 +19,7 @@ plugins {
     id("com.github.ben-manes.versions") version "0.53.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    id("com.adarshr.test-logger") version "4.0.0"
 }
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
@@ -63,6 +64,9 @@ tasks.dependencyUpdates {
 }
 detekt {
     buildUponDefaultConfig = true
+}
+testlogger {
+    slowThreshold = 600000L
 }
 tasks.check {
     dependsOn("detekt")
