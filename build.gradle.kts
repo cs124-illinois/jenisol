@@ -6,14 +6,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.plugins.signing.Sign
 
 group = "org.cs124"
-version = "2026.1.0"
+version = "2026.1.1"
 
 plugins {
     kotlin("jvm") version "2.3.0"
     java
     `maven-publish`
     signing
-    id("org.jmailen.kotlinter") version "5.3.0"
+    id("org.jmailen.kotlinter") version "5.4.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
     id("com.github.ben-manes.versions") version "0.53.0"
@@ -27,7 +27,7 @@ dependencies {
     implementation("design.aem:cloning:1.12.1")
     implementation("com.google.jimfs:jimfs:1.3.1")
 
-    testImplementation("io.kotest:kotest-runner-junit5:6.0.7")
+    testImplementation("io.kotest:kotest-runner-junit5:6.1.2")
     testImplementation("org.slf4j:slf4j-simple:2.0.17")
 }
 tasks.withType<JavaCompile> {
