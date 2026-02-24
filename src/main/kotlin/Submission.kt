@@ -812,7 +812,7 @@ class SubmissionDesignExtraMethodError(klass: Class<*>, executable: Executable) 
                 "constructor"
             }
         } ${executable.fullName(klass.isKotlin())}.",
-        "Your submission provides an extra method.",
+        "Your submission provides an extra method. If this is a helper method, make it private.",
     )
 
 class SubmissionDesignExtraInnerClassError(klass: Class<*>, innerKlass: Class<*>) :
