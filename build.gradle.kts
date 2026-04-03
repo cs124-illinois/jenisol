@@ -6,10 +6,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.plugins.signing.Sign
 
 group = "org.cs124"
-version = "2026.2.0"
+version = "2026.4.0"
 
 plugins {
-    kotlin("jvm") version "2.3.10"
+    kotlin("jvm") version "2.3.20"
     java
     `maven-publish`
     signing
@@ -22,12 +22,12 @@ plugins {
     id("com.adarshr.test-logger") version "4.0.0"
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.10")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     implementation("io.github.classgraph:classgraph:4.8.184")
     implementation("design.aem:cloning:1.12.1")
     implementation("com.google.jimfs:jimfs:1.3.1")
 
-    testImplementation("io.kotest:kotest-runner-junit5:6.1.3")
+    testImplementation("io.kotest:kotest-runner-junit5:6.1.10")
     testImplementation("org.slf4j:slf4j-simple:2.0.17")
 }
 tasks.withType<JavaCompile> {
