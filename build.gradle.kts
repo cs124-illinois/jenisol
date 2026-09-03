@@ -6,29 +6,29 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.plugins.signing.Sign
 
 group = "org.cs124"
-version = "2026.4.0"
+version = "2026.9.0"
 
 plugins {
-    kotlin("jvm") version "2.3.20"
+    kotlin("jvm") version "2.4.10"
     java
     `maven-publish`
     signing
-    id("org.jmailen.kotlinter") version "5.4.2"
+    id("org.jmailen.kotlinter") version "5.7.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
-    id("com.github.ben-manes.versions") version "0.53.0"
+    id("io.github.ben-manes.versions") version "0.61.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
-    implementation("io.github.classgraph:classgraph:4.8.184")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.10")
+    implementation("io.github.classgraph:classgraph:4.8.194")
     implementation("design.aem:cloning:1.12.1")
-    implementation("com.google.jimfs:jimfs:1.3.1")
+    implementation("com.google.jimfs:jimfs:1.3.2")
 
-    testImplementation("io.kotest:kotest-runner-junit5:6.1.10")
-    testImplementation("org.slf4j:slf4j-simple:2.0.17")
+    testImplementation("io.kotest:kotest-runner-junit5:6.2.4")
+    testImplementation("org.slf4j:slf4j-simple:2.0.18")
 }
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
@@ -72,7 +72,7 @@ tasks.check {
     dependsOn("detekt")
 }
 googleJavaFormat {
-    toolVersion = "1.22.0"
+    toolVersion = "1.27.0"
 }
 tasks.compileKotlin {
     dependsOn("createProperties")
