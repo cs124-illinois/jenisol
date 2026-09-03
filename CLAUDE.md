@@ -36,8 +36,10 @@ This is a Gradle/Kotlin project (build.gradle.kts). Java 17 required.
 Use Kotest test filtering via command line or IDE integration.
 
 ### Publishing
-- `./gradlew publish` - Publish to Maven repository
-- Configured for Sonatype Maven Central (s01.oss.sonatype.org)
+- `./gradlew publish` - Build, sign, upload to a Sonatype staging repository, then close and release it to Maven Central
+- Uses the gradle-nexus-publish-plugin against the Central Portal staging API (ossrh-staging-api.central.sonatype.com)
+- Credentials come from `~/.gradle/gradle.properties` (`sonatypeUsername`, `sonatypePassword`, and `signing.*`)
+- Bump `version` in `build.gradle.kts` before publishing; a version already on Central cannot be republished
 
 ### Dependency Updates
 - `./gradlew dependencyUpdates` - Check for available dependency updates

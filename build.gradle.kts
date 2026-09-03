@@ -140,6 +140,9 @@ nexusPublishing {
         }
     }
 }
+tasks.publish {
+    dependsOn("publishToSonatype", "closeAndReleaseSonatypeStagingRepository")
+}
 signing {
     setRequired {
         gradle.taskGraph.allTasks.any { it.name.contains("ToSonatype") }
