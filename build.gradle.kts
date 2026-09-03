@@ -24,7 +24,7 @@ plugins {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.10")
     implementation("io.github.classgraph:classgraph:4.8.194")
-    implementation("design.aem:cloning:1.12.1")
+    implementation("io.github.kostaskougios:cloning:1.13.0")
     implementation("com.google.jimfs:jimfs:1.3.2")
 
     testImplementation("io.kotest:kotest-runner-junit5:6.2.4")
