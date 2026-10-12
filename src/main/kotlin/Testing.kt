@@ -88,6 +88,42 @@ internal fun <P : ParameterGroup> Executable.formatBoundMethodCall(parameterValu
 
 private fun String.hasUnprintableCharacter() = this.any { char -> !char.isWhitespace() && char < 32.toChar() }
 
+private const val MAX_TRAILING_SPACE_LINES = 5
+
+// Formats captured output between --> and <-- markers. Trailing spaces are otherwise invisible when output ends with a
+// newline, since the closing marker lands on the next line. So when the final line has trailing spaces we put the
+// closing marker on that line, and we note any lines with trailing spaces. Other output is shown unchanged.
+internal fun String.toMarkedOutput(noteUnprintable: Boolean = false): String {
+    val notes = mutableListOf("length $length")
+    if (noteUnprintable && hasUnprintableCharacter()) {
+        notes += "contains unprintable characters"
+    }
+    val endsWithNewline = endsWith("\n")
+    val lines = split("\n").let { if (endsWithNewline) it.dropLast(1) else it }
+    val trailingSpaceLines = lines.mapIndexedNotNull { index, line ->
+        val content = line.removeSuffix("\r")
+        if (content.isNotEmpty() && content.last().isWhitespace()) index + 1 else null
+    }
+    if (trailingSpaceLines.isEmpty()) {
+        return "$this<-- (${notes.joinToString(", ")})"
+    }
+    val lastLineHasTrailingSpaces = trailingSpaceLines.last() == lines.size
+    val output = if (endsWithNewline && lastLineHasTrailingSpaces) {
+        notes[0] = "length $length including the final newline"
+        removeSuffix("\n")
+    } else {
+        this
+    }
+    val lineList = trailingSpaceLines.take(MAX_TRAILING_SPACE_LINES).joinToString(", ") +
+        if (trailingSpaceLines.size > MAX_TRAILING_SPACE_LINES) ", ..." else ""
+    notes += if (trailingSpaceLines.size == 1) {
+        "line $lineList has trailing spaces"
+    } else {
+        "lines $lineList have trailing spaces"
+    }
+    return "$output<-- (${notes.joinToString(", ")})"
+}
+
 @Suppress("unused")
 data class TestResult<T, P : ParameterGroup>(
     @JvmField val runnerID: Int,
@@ -175,48 +211,33 @@ data class TestResult<T, P : ParameterGroup>(
                 """
 Solution printed:
 -->
-${solution.stdout}<-- (length ${solution.stdout.length})
+${solution.stdout.toMarkedOutput()}
 Submission printed:
 -->
-${submission.stdout}<-- ${
-                    if (submission.stdout.hasUnprintableCharacter()) {
-                        "(length ${submission.stdout.length}, contains unprintable characters)"
-                    } else {
-                        "(length ${submission.stdout.length})"
-                    }
-                }""".trim()
+${submission.stdout.toMarkedOutput(noteUnprintable = true)}
+                """.trim()
             }
 
             differs.contains(Differs.STDERR) -> {
                 """
 Solution printed to STDERR:
 -->
-${solution.stderr}<-- (length ${solution.stderr.length})
+${solution.stderr.toMarkedOutput()}
 Submission printed to STDERR:
 -->
-${submission.stderr}<-- ${
-                    if (submission.stderr.hasUnprintableCharacter()) {
-                        "(length ${submission.stderr.length}, contains unprintable characters)"
-                    } else {
-                        "(length ${submission.stderr.length})"
-                    }
-                }""".trim()
+${submission.stderr.toMarkedOutput(noteUnprintable = true)}
+                """.trim()
             }
 
             differs.contains(Differs.INTERLEAVED_OUTPUT) -> {
                 """
 Combined solution input and output:
 -->
-${solution.interleavedOutput}<-- (length ${solution.interleavedOutput.length})
+${solution.interleavedOutput.toMarkedOutput()}
 Combined submission input and output:
 -->
-${submission.interleavedOutput}<-- ${
-                    if (submission.interleavedOutput.hasUnprintableCharacter()) {
-                        "(length ${submission.interleavedOutput.length}, contains unprintable characters)"
-                    } else {
-                        "(length ${submission.interleavedOutput.length})"
-                    }
-                }""".trim()
+${submission.interleavedOutput.toMarkedOutput(noteUnprintable = true)}
+                """.trim()
             }
 
             differs.contains(Differs.RETURN) -> {
