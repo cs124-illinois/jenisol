@@ -155,8 +155,23 @@ nexusPublishing {
         }
     }
 }
+// A release cannot be taken back, so nothing reaches Maven Central that has not been through the
+// tests, lint and detekt first. The publication tasks only depend on the jars, so this has to be
+// ordered explicitly, and there is no point opening a staging repository for a build that fails.
+tasks.matching { it.name == "publishToSonatype" }.configureEach {
+    mustRunAfter(tasks.build)
+}
+tasks.named("initializeSonatypeStagingRepository") {
+    mustRunAfter(tasks.build)
+}
+
+// The staging repository can only be closed once everything has been uploaded into it.
+tasks.named("closeAndReleaseSonatypeStagingRepository") {
+    mustRunAfter("publishToSonatype")
+}
 tasks.publish {
-    dependsOn("publishToSonatype", "closeAndReleaseSonatypeStagingRepository")
+    description = "Builds and tests jenisol, uploads it to Maven Central, then closes and releases the staging repository."
+    dependsOn(tasks.build, "publishToSonatype", "closeAndReleaseSonatypeStagingRepository")
 }
 signing {
     setRequired {
