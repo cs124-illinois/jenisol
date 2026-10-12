@@ -6,29 +6,29 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.plugins.signing.Sign
 
 group = "org.cs124"
-version = "2026.9.0"
+version = "2026.10.0"
 
 plugins {
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.21"
     java
     `maven-publish`
     signing
     id("org.jmailen.kotlinter") version "5.7.0"
     checkstyle
     id("com.github.sherter.google-java-format") version "0.9"
-    id("io.github.ben-manes.versions") version "0.61.0"
+    id("io.github.ben-manes.versions") version "0.65.0"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.adarshr.test-logger") version "4.0.0"
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.10")
-    implementation("io.github.classgraph:classgraph:4.8.194")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.21")
+    implementation("io.github.classgraph:classgraph:4.8.197")
     implementation("io.github.kostaskougios:cloning:1.13.0")
     implementation("com.google.jimfs:jimfs:1.3.2")
 
-    testImplementation("io.kotest:kotest-runner-junit5:6.2.4")
-    testImplementation("org.slf4j:slf4j-simple:2.0.18")
+    testImplementation("io.kotest:kotest-runner-junit5:6.2.5")
+    testImplementation("org.slf4j:slf4j-simple:2.0.20")
 }
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
@@ -64,6 +64,21 @@ tasks.dependencyUpdates {
 }
 detekt {
     buildUponDefaultConfig = true
+}
+checkstyle {
+    toolVersion = "14.3.0"
+}
+tasks.withType<Checkstyle>().configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+configurations.matching { it.name == "kotlinBouncyCastleConfiguration" }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.bouncycastle") {
+            useVersion("1.86")
+        }
+    }
 }
 testlogger {
     slowThreshold = 600000L
